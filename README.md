@@ -1,7 +1,7 @@
 # Citasune 
 
 Welcome to the official repository for **Citasune**, a UBG (Unblocked Gaming) site. This was made as a passion project!
-
+![Citasune Icon](./assets/imageassets/CitasuneIcon.png)
 ---
 
 # INFO
