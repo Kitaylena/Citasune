@@ -7,30 +7,198 @@
     font-style: normal; 
 }
 
-p {
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
     font-family: 'thenormalfontorsmth', sans-serif;
-    font-size: 1.2rem;
     color: #ffffff;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+p {
+    font-size: clamp(1rem, 1.5vw, 1.25rem);
+    color: rgba(255, 255, 255, 0.8);
+    letter-spacing: 0.5px;
 }
 
 h1 {
-    font-family: 'thenormalfontorsmth', sans-serif;
-    font-size: 3.5rem;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
     color: #ffffff;
-    text-shadow:
-        0 0 10px rgba(255, 255, 255, 0.8),
-        0 0 20px rgba(255, 255, 255, 0.6),
-        0 0 40px rgba(255, 255, 255, 0.4),
-        0 0 80px rgba(255, 255, 255, 0.2);
+    letter-spacing: 1px;
+    text-shadow: 
+        0 0 12px rgba(238, 241, 241, 0.5),
+        0 0 30px rgba(0, 243, 255, 0.2);
+}
+
+h3 {
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    font-weight: 500;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+}
+
+#inputbox {
+    width: 100%;
+    max-width: 420px;
+    padding: 0.85rem 1.25rem;
+    font-family: 'thenormalfontorsmth', sans-serif;
+    font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#inputbox::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+    transition: opacity 0.2s ease;
+}
+
+#inputbox:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+#inputbox:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(0, 243, 255, 0.6);
+    box-shadow: 
+        0 0 16px rgba(0, 243, 255, 0.25),
+        inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+#inputbox:focus::placeholder {
+    opacity: 0.25;
+}
+
+#rowofbuttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.rowbutton {
+    height: 72px;
+    width: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rowbutton:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(0, 243, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 243, 255, 0.15);
+}
+
+.rowbutton img {
+    height: 52px;
+    width: 52px;
+    object-fit: contain;
+    transition: transform 0.25s ease;
+}
+
+.rowbutton:hover img {
+    transform: scale(1.08);
+}
+
+/* topbar stuff */
+
+#topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 65px;
+    background: rgba(13, 14, 14, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+}
+
+#shadowthing {
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), transparent);
+    pointer-events: none;
+}
+
+.topbarsection {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.topbardivider {
+    width: 1px;
+    height: 22px;
+    background-color: rgba(255, 255, 255, 0.18);
+    border-radius: 1px;
+}
+
+.topbarbutton {
+    height: 42px;
+    width: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.topbarbutton:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(0, 243, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 243, 255, 0.15);
+}
+
+.topbarbutton img {
+    height: 22px;
+    width: 22px;
+    object-fit: contain;
+    transition: transform 0.25s ease;
+}
+
+.topbarbutton:hover img {
+    transform: scale(1.08);
 }
 
 /* background stuff */
+
 @keyframes scrolla {
     from {
         background-position: 0 0;
     }
     to {
-        background-position: 100% 100%;
+        background-position: 1000px 1000px;
     }
 }
 
@@ -41,51 +209,63 @@ h1 {
     width: 100%;
     height: 100%;
     z-index: -1;
-    background-color: #0d0e0e;
+    background-color: #0b0c0d;
 }
 
 #checkerpattern {
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 108%;
+    top: 0;
+    left: 0;
+    width: 100%;
     height: 100%;
     background-image: url("../assets/imageassets/scroll.png");
     background-repeat: repeat;
     background-size: 70px 70px;
-    opacity: 0.34;
-    animation: scrolla 100s linear infinite;
+    opacity: 0.22;
+    animation: scrolla 80s linear infinite;
 }
 
 /* title stuff */
 
-#uh {
+#herocontainer {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    text-align: center;
+    width: 90%;
+    max-width: 520px;
+}
 
+#herocard {
+    background: rgba(20, 22, 25, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    gap: 1rem;
 }
 
 #title {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 20px;
+    gap: 1.2rem;
 }
 
 #title img {
-    width: auto;
-    max-width: 100px;
+    width: clamp(48px, 6vw, 68px);
     height: auto;
-    margin-bottom: 0;
+    filter: drop-shadow(0 0 10px rgba(174, 212, 212, 0.3));
 }
 
 #randomtext {
-    opacity: 0.7;
+    opacity: 0.85;
 }

@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title> Citasune </title>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Citasune</title>
   <link rel="icon" type="image/png" href="./assets/imageassets/CitasuneIcon.png">
   <link rel="stylesheet" href="./style/style.css">
 </head>
@@ -10,13 +11,60 @@
   <div id="background">
     <div id="checkerpattern"></div>
   </div>
-  <div id="uh">
-  <div id="title">
-    <img src="./assets/imageassets/CitasuneIcon.png" alt="Citasune Icon">
-    <h1>Citasune</h1>
+
+  <div id="topbar">
+    <div id="shadowthing"></div>
+    
+    <div class="topbarsection left">
+      <button class="topbarbutton" aria-label="Home">
+        <img src="./assets/imageassets/CitasuneIcon.png" alt="Citasune Icon">
+      </button>
+      <div class="topbardivider"></div>
+      <h3 id="titlenameorsmth">Citasune</h3>
+    </div>
+
+    <div class="topbarsection right">
+      <div class="topbardivider"></div>
+      <button class="topbarbutton" id="gamepadbutton" aria-label="Games">
+        <img src="./assets/imageassets/game.png" alt="Gamepad Icon">
+      </button>
+      <button class="topbarbutton" id="proxybutton" aria-label="Proxy">
+        <img src="./assets/imageassets/proxy.png" alt="Internet Icon">
+      </button>
+      <button class="topbarbutton" id="appsbutton" aria-label="Apps">
+        <img src="./assets/imageassets/appsicon.png" alt="Apps Icon">
+      </button>
+      <button class="topbarbutton" id="infobutton" aria-label="Info">
+        <img src="./assets/imageassets/info.png" alt="Info Icon">
+      </button>
+      <button class="topbarbutton" id="settingsbutton" aria-label="Settings">
+        <img src="./assets/imageassets/settings.png" alt="Settings Icon">
+      </button>
+    </div>
   </div>
-  <p id="randomtext">Welcome to Citasune!</p>
-  </div>
+
+  <main id="herocontainer">
+    <div id="herocard">
+      <div id="title">
+        <img src="./assets/imageassets/CitasuneIcon.png" alt="Citasune Icon">
+        <h1>Citasune</h1>
+      </div>
+      <p id="randomtext">Welcome to Citasune!</p>
+      <input type="text" id="inputbox" placeholder="Search the web.." />
+      <div id="rowofbuttons">
+      <button class="rowbutton" id="gamepadbutton" aria-label="Games">
+        <img src="./assets/imageassets/game.png" alt="Gamepad Icon">
+      </button>
+      <button class="rowbutton" id="proxybutton" aria-label="Proxy">
+        <img src="./assets/imageassets/proxy.png" alt="Internet Icon">
+      </button>
+       <button class="rowbutton" id="appsbutton" aria-label="Apps">
+        <img src="./assets/imageassets/appsicon.png" alt="Apps Icon">
+      </button>
+      </div>
+    </div>
+  </main>
+
   <script src="./scripts/main/main.js"></script>
 </body>
 </html>
