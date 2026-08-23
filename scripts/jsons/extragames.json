@@ -1,0 +1,146 @@
+[
+ {
+  "id": 1000,
+  "name": "Grand Theft Auto: Vice City",
+  "cover": "/assets/gameicons/1000.png",
+  "url": "/games/Grand Theft Auto Vice City.html",
+  "author": "Rockstar Games",
+  "authorLink": "https://www.rockstargames.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 1001,
+  "name": "Balatro",
+  "cover": "/assets/gameicons/1001.png",
+  "url": "/games/balatro/index.html",
+  "author": "LocalThunk",
+  "authorLink": "https://www.playbalatro.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 1002,
+  "name": "Deltarune",
+  "cover": "/assets/gameicons/1002.png",
+  "url": "/games/deltarune.html",
+  "author": "Toby Fox",
+  "authorLink": "https://www.deltarune.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 1003,
+  "name": "Your Turn To Die",
+  "cover": "/assets/gameicons/1003.png",
+  "url": "/games/yourturntodie.html",
+  "author": "Nankidai",
+  "authorLink": "https://nankidai.itch.io/kimigasine",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 1004,
+  "name": "Crimson Fantasia",
+  "cover": "/assets/gameicons/1004.png",
+  "url": "/games/crimson/index.html",
+  "author": "unknown",
+  "authorLink": ""
+ },
+ {
+  "id": 1005,
+  "name": "Pressing Under Pressure",
+  "cover": "/assets/gameicons/1005.png",
+  "url": "/games/pressunderpressure/index.html",
+  "author": "unknown",
+  "authorLink": ""
+ },
+ {
+  "id": 1006,
+  "name": "67 Factory",
+  "cover": "/assets/gameicons/1006.png",
+  "url": "/games/67factory/index.html",
+  "author": "unknown",
+  "authorLink": ""
+ },
+ {
+  "id": 1007,
+  "name": "Diddy Game",
+  "cover": "/assets/gameicons/1007.png",
+  "url": "/games/diddygame.html",
+  "author": "unknown",
+  "authorLink": ""
+ },
+ {
+  "id": 1008,
+  "name": "Kirk Clicker",
+  "cover": "/assets/gameicons/1008.png",
+  "url": "/games/kirk_clicker.html",
+  "author": "unknown",
+  "authorLink": ""
+ },
+ {
+  "id": 1010,
+  "name": "Tung Sahur Horror",
+  "cover": "/assets/gameicons/1010.png",
+  "url": "/games/tungtunghorror.html",
+  "author": "unknown",
+  "authorLink": ""
+ },
+ {
+  "id": 1011,
+  "name": "Angry Birds Epic",
+  "cover": "/assets/gameicons/1011.png",
+  "url": "/games/angrybirdsepic.html",
+  "author": "Rovio Entertainment",
+  "authorLink": "https://www.rovio.com"
+ },
+ {
+  "id": 1012,
+  "name": "Windows 98",
+  "cover": "/assets/gameicons/1012.png",
+  "url": "/games/Windows.html",
+  "author": "unknown",
+  "authorLink": "",
+  "special": [
+   "tools"
+  ]
+ },
+ {
+  "id": 1013,
+  "name": "GTA Simulator",
+  "cover": "/assets/gameicons/1013.png",
+  "url": "/games/gta/index.html",
+  "author": "FreezeNova",
+  "authorLink": "https://www.freezenova.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 1014,
+  "name": "Minecraft 26.1.2",
+  "cover": "/assets/gameicons/1014.png",
+  "url": "/games/minecraft.html",
+  "author": "Mojang Studios",
+  "authorLink": "https://www.mojang.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 1015,
+  "name": "Dude Theft Wars",
+  "cover": "/assets/gameicons/1015.png",
+  "url": "/games/dudetheftwars/index.html",
+  "author": "Poxel Studios Games",
+  "authorLink": "https://play.google.com/store/apps/details?id=com.PoxelStudios.DudeTheftAuto&hl=en_US",
+  "special": [
+   "port"
+  ]
+ }
+]

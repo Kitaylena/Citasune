@@ -1,0 +1,756 @@
+<html>
+<head>
+<style>
+body {
+    background-color: #02091d;
+    background-image: url("Untitled.png");
+  font-family: "Noto Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+    text-align: center;
+    color: white;
+}
+.thing23 {
+    text-align: left;
+
+}
+.img2 {
+     width: 0px;
+    height: 0px;
+        display: flex; 
+         margin-left: auto;
+  margin-right: auto;
+        align-items: center;
+}
+.thing54 {
+     border-radius: 15px 15px 0px 0px;
+  background-color: rgb(7, 150, 62);
+  outline: 5px solid black;
+}
+img {
+    width: 100%;
+    height: 150px;
+        display: block; 
+}
+h2 {
+    -webkit-text-stroke-width: 2px;
+   -webkit-text-stroke-color: black;
+font-size: 40px;
+}
+P {
+    -webkit-text-stroke-width: 1px;
+   -webkit-text-stroke-color: black;
+   font-size: 27px;
+}
+h1 {
+    -webkit-text-stroke-width: 2px;
+   -webkit-text-stroke-color: black;
+}
+h3 {
+    font-size: 23px;
+    -webkit-text-stroke-width: 1.2px;
+   -webkit-text-stroke-color: black;
+}
+    button {
+    background-color: white;
+border-radius: 10px;
+width: 110px;
+height: 30px;
+font-size: 13px;
+outline: 2px lightgray solid;
+font-family: "Nunito Sans", sans-serif;
+}
+</style>
+<title> 67 Factory </title>
+    <link rel="icon" href="https://img.freepik.com/premium-photo/number-67_2227-1439.jpg" type="image/x-icon">
+</head>
+<body id="background" onload=limitthing()>
+    <video id="fullScreenVideo" playsinline>
+    <source src="niche.mp4" type="video/mp4">
+  </video>
+    <div class="thing54" id="thing54">
+    <h1 id="fab">67 Factory</h1>
+    </div>
+    <h1 id="speedruntimer"> </h1>
+<h1 id="speedruntimer2"> </h1>
+    <h1 id="warning8"></h1>
+    <p id="d"> </p>
+    <div class="img2">
+    <img id="pumpkin" src="https://wallpapers.com/images/featured/jack-o-lantern-png-kjxj421cv1v1qeqc.jpg">
+    </div>
+<h1 id="thing"> Something </h1>
+<p id="counter">  </p>
+    <p id="Chancething"> 1% </p>
+    <button id = "trigger" onclick=thing2()> Press me </button>
+<h1 id="limit">Something2</h1>
+    <h2> Items </h2>
+<h3 id="edit1"> Mango (FREE)</h3>
+<p id="edit2"> This only works once, gives 20 slots for once you eat it. </p>
+    <button id= "buy4" onclick = buy4()> Buy </button>
+ <h3> Trade Offer (-50% less chance)</h3>
+<p> Earn 50 more slots but decreases the chance of getting 67. (using this will disable buying the coin.) </p>
+    <button id= "buy2" onclick = buy2()> Buy </button>
+ <h3> The Dice</h3>
+<p> 30 slots needed, only works once. Rerolls the slots from 1-70 </p>
+    <h1 id="whatnumber"> </h1>
+    <button id= "buy5" onclick = buy5()> Buy </button>
+<h3> Trade Offer 2.0 (20% added chance)</h3>
+<p> Trade in 20 slots for 20% added chance. </p>
+    <button id= "buy3" onclick = buy3()> Buy </button>
+    <h3> George Droyd (120 limit slots)</h3>
+<p> Costing, however rerolls 2 more times on the same limit slot you used up by clicking the button. This only works once. </p>
+    <button id= "buy6" onclick = buy6()> Buy </button>
+    <h3> Coin (50 limit slots)</h3>
+<p> Flips a coin where it could land on 67 or 68, this is based on luck so be careful..</p>
+    <button id= "buy1" onclick = buy()> Buy </button>
+    <div class="thing23">
+        <h2> Modifiers </h2>
+        <h3> Evil Numbers </h3>
+        <P> Numbers can go below in the negatives however if you hit -67 you will experience HELL.</P>
+        <button id = "Apply1" onclick="apply1()"> Apply </button>
+        <button id = "Remove1" onclick="remove1()"> Remove </button>
+        <h3> Almost NO Time left! </h3>
+        <P id="warning"> Each time a round starts, there will be a timer that can range between 30-100 seconds, and you have to get 67 before the timer ends.</P>
+        <button id = "Apply2" onclick="apply2()"> Apply </button>
+        <button id = "Remove2" onclick="remove2()"> Remove </button>
+        <h3> Memory </h3>
+        <P id="warning2"> Every once and awhile, a number will appear for 2 seconds and you will have to put in the answer in the prompt otherwise you lose the round.</P>
+        <button id = "Apply3" onclick="apply3()"> Apply </button>
+        <button id = "Remove3" onclick="remove3()"> Remove </button>
+<h3> The ACTUAL Number Generator </h3>
+        <P id="warning3"> You can guess from the title, no longer will need to get 67 but will randomly generate a number from the min and max and that's your goal. </P>
+        <button id = "Apply4" onclick="apply4()"> Apply </button>
+        <button id = "Remove4" onclick="remove4()"> Remove </button>
+        <h3> Halloween Mode </h3>
+        <P id="warning6"> Spooky Theme! Every once in awhile, there will be a pumpkin that will ask for a certain amount of limit slots, if you don't have enough, you DIE. </P>
+        <button id = "Apply6" onclick="apply6()"> Apply </button>
+        <button id = "Remove6" onclick="remove6()"> Remove </button>
+        <h3> Birthday Mode </h3>
+        <P id="warning4"> the birthday party is so tuff boiii, includes "ads", and you slowly lose slots because yall keep eating the cake </P>
+        <button id = "Apply5" onclick="apply5()"> Apply </button>
+          <button id = "Apply5DARK" onclick="apply5DARK()"> Dark Mode </button>
+        <button id = "Remove5" onclick="remove5()"> Remove </button>
+          <h3> Lincoln Virus </h3>
+        <P id="warning6"> Four score and SEVERED your soul ago. </P>
+        <button id = "Apply7" onclick="apply7()"> Apply </button>
+        <button id = "Remove7" onclick="remove7()"> Remove </button>
+        <h3> Custom</h3>
+       <input id="max" type="number" placeholder="Max">
+        <input id="min" type="number" placeholder="Min">
+        <button onclick=maxchange()> Apply </button>
+    </div>
+    <p> </p>
+    <div class="thing234">
+        <p id="wincounter"> </p>
+    <img src= "https://img-s-msn-com.akamaized.net/tenant/amp/entityid/AA1LOXb0.img?w=768&h=432&m=6&x=270&y=108&s=268&d=268" alt="67 kid image">
+    </div>
+    <script>
+    </script>
+<script>
+    document.getElementById("wincounter").textContent = "Wins:" + localStorage.getItem("WinCounter")
+let goal = 67;
+let trueorfalse = false;
+let timeRemaining = 120;
+ let speedruntimer = document.getElementById("speedruntimer");
+document.addEventListener('DOMContentLoaded', function() {
+let speedruntimer2 = document.getElementById("speedruntimer2");
+    let specialroundchance = Math.floor(Math.random() * 10) + 1;
+    let insaneamount = Math.floor(Math.random() * 500) + 1;
+    const fab = document.getElementById("fab");
+    if (specialroundchance === 1) {
+trueorfalse = true;
+        alert("!");
+goal = insaneamount;
+        fab.innerHTML = "Special Round! You have 2 minutes to get " + insaneamount + " before the timer ends! Good luck.";
+document.addEventListener('click', function() {
+    }, { once: true });
+if (localStorage.getItem("button2") == "Yes") {
+document.getElementById("warning8").textContent = "You currently have a modifier that is messing up the timer (i would fix it but i almost just messed up the whole game and your actual timer is at the top above the below one.) Remember, your goal is " + goal + ".";
+            }
+        const timerInterval = setInterval(function() {
+            speedruntimer2.innerHTML = timeRemaining + " Seconds";
+            timeRemaining--;
+            if (timeRemaining == 29) {
+                 const audio = new Audio('speedruntimeruhcountdown.mp3');
+         audio.play();
+            }
+            if (timeRemaining < 0) {
+                clearInterval(timerInterval);
+                window.location.reload();
+            }
+        }, 1000);
+    }
+});
+const playButton = document.getElementById('trigger');
+    const video = document.getElementById('fullScreenVideo');
+    const content = document.getElementById('thing54');
+    video.style.display = 'none';
+    video.style.position = 'fixed';
+    video.style.top = '0';
+    video.style.left = '0';
+    video.style.width = '100vw';
+    video.style.height = '100vh';
+    video.style.objectFit = 'cover';
+    video.style.zIndex = '1';
+let counter = 0;
+let limit;
+let limitElement = document.getElementById("limit");
+let chance = 100;
+let min = 0;
+let max = chance;
+let numbers2 = false;
+    let chance2 = 1;
+    if (localStorage.getItem("button") == "Yes") {
+        apply1()
+    }
+if (localStorage.getItem("button4") == "Yes") {
+        apply4()
+    }
+    if (localStorage.getItem("button5") == "Yes") {
+        document.getElementById("Apply5").disabled = true;
+    document.body.style.backgroundImage = "url('Untitled2.png')";
+    document.getElementById("fab").textContent = "67 Factory (party edition 100% working 2025)"
+     document.getElementById("edit1").textContent = "Seth"
+      document.getElementById("edit2").textContent = "mango but worse, dont buy this please"
+        function partything() {
+const audio2 = new Audio('money.mp3');
+         audio2.play();
+ const button2123 = document.getElementById("buy4")
+ button2123.disabled = true;
+limit += 50
+    document.getElementById("Chancething").innerHTML = chance2 + ("%");
+    }
+document.body.style.backgroundColor = 'rgb(210, 182, 114)';
+document.querySelector(".thing54").style.backgroundColor = 'rgb(202, 36, 36)';
+        if (localStorage.getItem("button5dark") == "Yes") {
+document.body.style.backgroundColor = 'rgb(36, 15, 1)';
+        }
+ document.addEventListener('DOMContentLoaded', () => {
+    const playButton = document.getElementById('trigger');
+    const video = document.getElementById('fullScreenVideo');
+    const content = document.getElementById('thing54');
+    video.style.display = 'none';
+    video.style.position = 'fixed';
+    video.style.top = '0';
+    video.style.left = '0';
+    video.style.width = '100vw';
+    video.style.height = '100vh';
+    video.style.objectFit = 'cover';
+    video.style.zIndex = '1';
+    
+    playButton.addEventListener('click', function() {
+        const numbergen = Math.floor(Math.random() * (100 - 0 + 1)) + 1;
+        console.log(numbergen);
+        if (numbergen === 67) {
+        content.style.display = 'none';
+        video.style.display = 'block';
+        video.play();
+        }
+        if (numbergen === 21) {
+
+        window.open("anotherad.mp4", "AD");
+        }
+         if (numbergen === 42) {
+
+        window.open("42.mp4", "AD");
+        }
+    });
+    video.addEventListener('ended', function() {
+        video.remove();
+
+    });
+});
+const timerInterval = setInterval(() => {
+    limit -= 1
+    document.getElementById("limit").innerHTML = "You have this many tries to get " + goal + " until you DIE: " + limit;
+    let timeRemaining = 100000;
+            timeRemaining--;
+            if (timeRemaining < 0) {
+                clearInterval(timerInterval);
+                window.location.reload();   
+            }
+        }, 2000);
+    }
+    if (localStorage.getItem("button3") === "Yes") {
+    document.getElementById("Apply3").disabled = true;
+
+    const thingy3 = 30 * 1000; 
+    const thingy4 = Math.floor(Math.random() * 100) + 1;
+
+    setTimeout(() => {
+        document.getElementById("d").textContent = thingy4;
+const audio = new Audio('coinflip.mp3');
+         audio.play();
+        setTimeout(() => {
+            const audio = new Audio('diddyblud.mp3');
+         audio.play();
+            document.getElementById("d").textContent = "";
+
+            setTimeout(() => {
+                const thinga = prompt("what was the number that just appeared?");
+if (parseInt(thinga, 10) === thingy4) {
+    alert("congrats you passed.");
+} else {
+    const audio = new Audio('scary.mp3');
+         audio.play();
+    const stylething2 = document.body;
+stylething2.style.backgroundImage = 'url("https://www.indiatimes.com/thumb/123963169.cms?imgsize=46526&width=616&resizemode=4")';
+setTimeout (() => {
+    window.location.reload();
+    },2000 )
+}
+
+            }, 2000);
+        }, 2000);
+
+    }, thingy3);
+}
+if (localStorage.getItem("button6") == "Yes") {
+        document.getElementById("Apply6").disabled = true;
+    document.body.style.backgroundImage = "url('Untitled3.png')";
+    document.getElementById("fab").textContent = "67 Factory (spooky edition)"
+    document.body.style.backgroundColor = 'rgb(0, 0, 0)';
+document.querySelector(".thing54").style.backgroundColor = 'rgb(194, 91, 8)';
+const thingy3 = 40 * 1000; 
+   const thingy4 = Math.floor(Math.random() * (50 - 30 + 1)) + 30;
+
+    setTimeout(() => {
+        document.querySelector(".img2").style.width = "150px"
+        document.querySelector(".img2").style.height = "150px"
+        document.getElementById("d").textContent = "Hey, do you have " + thingy4 + " candies? (limit slots) (10 seconds)";
+        document.getElementById("trigger").disabled = true;
+const audio = new Audio('ghost.mp3');
+         audio.play();
+    setTimeout(() => { 
+        if (limit >= thingy4) {
+            alert("Candy has been taken, reduced " + thingy4 + (" limit slots."))
+            document.getElementById("trigger").disabled = false;
+             document.getElementById("d").textContent = "Thank you.";
+              document.querySelector(".img2").style.width = "0px"
+        document.querySelector(".img2").style.height = "0px"
+            limit -= thingy4
+            const audio = new Audio('ghost.mp3');
+         audio.play();
+         const audio2 = new Audio('money.mp3');
+         audio2.play();
+        } else {
+            alert("You don't have enough.. DIE.")
+            const audio = new Audio('scary.mp3');
+         audio.play();
+    const stylething2 = document.body;
+stylething2.style.backgroundImage = 'url("https://www.indiatimes.com/thumb/123963169.cms?imgsize=46526&width=616&resizemode=4")';
+setTimeout (() => {
+    window.location.reload();
+    },2000 )
+        }
+    }, 10 * 1000 )
+    }, thingy3);
+}
+ if (localStorage.getItem("button7") == "Yes") {
+    time2 = 20 * 1000;
+    let doclick = true;
+
+    const clickHandler = function() {
+        if (doclick == false) {
+            document.removeEventListener('click', clickHandler);
+            console.log("finished");
+            window.open('lincolnvirus.mp4', "idk");
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        }
+    };
+
+    setTimeout(() => {
+        doclick = false;
+        document.getElementById("d").textContent = "DO NOT CLICK ANYWHERE IN 3 SECONDS";
+        setTimeout(() => {
+            document.getElementById("d").textContent = " ";
+            document.addEventListener('click', clickHandler);
+        }, 3000);
+    }, time2);
+}
+if (trueorfalse === false ) {
+    if (localStorage.getItem("button2") == "Yes") {
+let timeRemaining = Math.floor(Math.random() * (100 - 30 + 1)) + 30;
+        document.getElementById("Apply2").disabled = true;
+        const timerInterval = setInterval(() => {
+ let speedrunTimer = document.getElementById("speedruntimer");
+            speedrunTimer.innerHTML = timeRemaining + " Seconds";
+            timeRemaining--;
+            if (timeRemaining == 29) {
+                 const audio = new Audio('speedruntimeruhcountdown.mp3');
+         audio.play();
+            }
+            if (timeRemaining < 0) {
+                clearInterval(timerInterval);
+                window.location.reload();   
+            }
+        }, 1000);
+    }
+    }
+function limitthing() {
+    limit = Math.floor(Math.random() * 100) + 1;
+limit++;
+document.getElementById("limit").innerHTML = "You have this many tries to get " + goal + " until you DIE: " + limit;
+return limit;
+    }
+function buy() {
+if (limit >= 50) {
+     const audio2 = new Audio('money.mp3');
+         audio2.play();
+limit -= 50
+alert("thanks for the purchase")
+    const button2123 = document.getElementById("trigger")
+button2123.disabled = true;
+const audio = new Audio('coinflip.mp3');
+         audio.play();
+document.getElementById("limit").innerHTML = "Flipping Coin.."
+    var thing23 = Math.floor(Math.random() * 2) + 67;
+     setTimeout(() => { document.getElementById("limit").innerHTML = "Answer: " + thing23 },2000 )
+ setTimeout(() => {
+    if (thing23 === 67) {
+        let thinguh = localStorage.getItem("WinCounter")
+if (thinguh === null) {
+    thinguh = 0;
+} else {
+    thinguh = parseInt(thinguh);
+}
+thinguh++;
+localStorage.setItem("WinCounter", thinguh)
+const audio = new Audio('testthing.mp3');
+         audio.play();
+const stylething2 = document.body
+stylething2.style.backgroundImage = 'url("https://img.freepik.com/premium-photo/number-67_2227-1439.jpg")';
+    alert("JACKPOT 67!");
+document.getElementById("counter").innerHTML = "The counter has resetted and has stopped at " + counter + " (press the button to restart)";
+button2123.disabled = false;
+counter = 0;
+limitElement.innerHTML = "You have this many tries to get " + goal + " until you DIE: " + limit;
+      limit = 0;
+      setTimeout (() => { window.location.reload() },2000 )
+}
+if (thing23 === 68) {
+alert("aw better luck next time")
+    button2123.disabled = false;
+}
+     },4000)
+} else { alert("You are too poor to buy this!") }
+}
+function buy2() {
+     const audio2 = new Audio('money.mp3');
+         audio2.play();
+alert("50% less chance added.")
+ const button2123 = document.getElementById("buy1")
+ button2123.disabled = true;
+ max += max * 0.5;
+ chance2 -= chance2 * 0.5;
+limit += 50
+    document.getElementById("Chancething").innerHTML = chance2 + ("%");
+    }
+function buy4() {
+    if (localStorage.getItem("button5") == "Yes") {
+        document.getElementById("edit2").innerHTML = "fuck you"
+const audio2 = new Audio('money.mp3');
+         audio2.play();
+ const button2123 = document.getElementById("buy4")
+ button2123.disabled = true;
+limit += 50
+    document.getElementById("Chancething").innerHTML = chance2 + ("%");
+    } else {
+        const audio2 = new Audio('money.mp3');
+         audio2.play();
+ const button2123 = document.getElementById("buy4")
+ button2123.disabled = true;
+limit += 20
+    document.getElementById("Chancething").innerHTML = chance2 + ("%");
+    }
+    }
+function buy5() {
+if (limit >= 30) {
+     const audio2 = new Audio('money.mp3');
+         audio2.play();
+ const button2123 = document.getElementById("buy5")
+ button2123.disabled = true;
+    const randomthing = Math.floor(Math.random() * (70 - 30 + 1)) + 30;
+limit = randomthing;
+    document.getElementById("whatnumber").innerHTML = randomthing;
+    } else {
+alert("too poor");
+}
+    }
+    function buy6() {
+if (limit >= 120) {
+    limit -= 120
+     const audio2 = new Audio('money.mp3');
+         audio2.play();
+ const button2123 = document.getElementById("buy6")
+ button2123.disabled = true;
+    numbers2 = true;
+    } else {
+alert("too poor");
+}
+    }
+function buy3() {
+if (limit >= 20) {
+alert("20% chance added.")
+const audio2 = new Audio('money.mp3');
+         audio2.play();
+    min += min * 0.2;
+    chance2 += chance2 * 0.2;
+limit -= 20
+    document.getElementById("Chancething").innerHTML = chance2 + ("%");
+} else { alert("too poor")}
+} 
+function apply1() {
+    localStorage.setItem("button", "Yes");
+       min = -100;
+       document.getElementById("Apply1").disabled = true;
+    }
+    function remove1() {
+    localStorage.removeItem('button')
+       min = 0;
+       document.getElementById("Apply1").disabled = false;
+    }
+    function apply2() {
+    localStorage.setItem("button", "Yes");
+       min = -100;
+       document.getElementById("Apply1").disabled = true;
+    }
+    function remove2() {
+        localStorage.removeItem('button2')
+
+       document.getElementById("Apply2").disabled = false;
+    }
+    function apply2() {
+    localStorage.setItem("button2", "Yes");
+       document.getElementById("Apply2").disabled = true;
+    alert("Reload the page for the effect to take place. (WILL INSTANTLY START ONCE IT LOADS)")
+    }
+    function remove3() {
+        localStorage.removeItem('button3')
+
+       document.getElementById("Apply3").disabled = false;
+    }
+    function apply3() {
+    localStorage.setItem("button3", "Yes");
+       document.getElementById("Apply3").disabled = true;
+    alert("Reload the page for the effect to take place. (WILL INSTANTLY START ONCE IT LOADS)")
+    }
+ function remove4() {
+        localStorage.removeItem('button4')
+
+       document.getElementById("Apply4").disabled = false;
+    }
+    function maxchange() {
+       const valuething = Number(document.getElementById("max").value);
+       const valuething2 = Number(document.getElementById("min").value);
+       chance = valuething;
+       min = valuething2;
+    max = chance;
+    }
+    
+    function apply4() {
+if (trueorfalse === false) {
+    localStorage.setItem("button4", "Yes");
+       document.getElementById("Apply4").disabled = true;
+    const randomnumber = Math.floor(Math.random() * (max - min + 1)) + min;
+        if (randomnumber > 50) {
+goal += randomnumber
+} else {
+goal -= randomnumber
+}
+
+    }
+
+}
+function apply6() {
+    localStorage.setItem("button6", "Yes");
+       document.getElementById("Apply6").disabled = true;
+    alert("Reload the page for the effect to take place. (WILL INSTANTLY START ONCE IT LOADS)")
+    }
+     function remove6() {
+        localStorage.removeItem('button6')
+
+       document.getElementById("Apply6").disabled = false;
+    }
+    function apply7() {
+    localStorage.setItem("button7", "Yes");
+       document.getElementById("Apply7").disabled = true;
+    alert("Reload the page for the effect to take place. (WILL INSTANTLY START ONCE IT LOADS)")
+    }
+     function remove7() {
+        localStorage.removeItem('button7')
+
+       document.getElementById("Apply7").disabled = false;
+    }
+function apply5() {
+    localStorage.setItem("button5", "Yes");
+       document.getElementById("Apply5").disabled = true;
+    alert("Reload the page for the effect to take place. (WILL INSTANTLY START ONCE IT LOADS)")
+    }
+     function apply5DARK() {
+        localStorage.setItem("button5", "Yes");
+    localStorage.setItem("button5dark", "Yes");
+       document.getElementById("Apply5DARK").disabled = true;
+    alert("Reload the page for the effect to take place. (WILL INSTANTLY START ONCE IT LOADS)")
+    }
+    function remove5() {
+        localStorage.removeItem('button5')
+
+       document.getElementById("Apply5").disabled = false;
+    }
+    function thing2() {
+         if (numbers2 === true) {
+             setTimeout(( ) => {
+        const audio = new Audio('coinflip.mp3');
+         audio.play();
+    const something = Math.floor(Math.random() * (max - min + 1)) + min;
+    counter++;
+     document.getElementById("thing").innerHTML = something;
+     document.getElementById("thing").style.color = "grey";
+     if (something === goal) {
+        let thinguh = localStorage.getItem("WinCounter")
+if (thinguh === null) {
+    thinguh = 0;
+} else {
+    thinguh = parseInt(thinguh);
+}
+thinguh++;
+localStorage.setItem("WinCounter", thinguh)
+ const audio = new Audio('testthing.mp3');
+         audio.play();
+const stylething2 = document.body;
+stylething2.style.backgroundImage = 'url("https://img.freepik.com/premium-photo/number-67_2227-1439.jpg")';
+    alert("JACKPOT 67!");
+document.getElementById("counter").innerHTML = "The counter has resetted and has stopped at " + counter + " (press the button to restart)";
+counter = 0;
+limitElement.innerHTML = "You have this many tries to get " + goal + " until you DIE: " + limit;
+      limit = 0;
+     }
+      },500 )
+      setTimeout(( ) => {
+const audio = new Audio('coinflip.mp3');
+         audio.play();
+    const something = Math.floor(Math.random() * (max - min + 1)) + min;
+    counter++;
+     document.getElementById("thing").innerHTML = something;
+     document.getElementById("thing").style.color = "grey";
+     if (something === goal) {
+        let thinguh = localStorage.getItem("WinCounter")
+if (thinguh === null) {
+    thinguh = 0;
+} else {
+    thinguh = parseInt(thinguh);
+}
+thinguh++;
+localStorage.setItem("WinCounter", thinguh)
+ const audio = new Audio('testthing.mp3');
+         audio.play();
+const stylething2 = document.body;
+stylething2.style.backgroundImage = 'url("https://img.freepik.com/premium-photo/number-67_2227-1439.jpg")';
+    alert("JACKPOT 67!");
+document.getElementById("counter").innerHTML = "The counter has resetted and has stopped at " + counter + " (press the button to restart)";
+counter = 0;
+limitElement.innerHTML = "You have this many tries to get " + goal + " until you DIE: " + limit;
+      limit = 0;
+  }
+    },1000 )
+    }
+
+const audio = new Audio('coinflip.mp3');
+         audio.play();
+    limit--;
+    const something = Math.floor(Math.random() * (max - min + 1)) + min;
+    document.getElementById("thing").style.color = "white";
+counter++;
+if (limit === 41) {
+        const audio = new Audio('41.mp3');
+         audio.play();
+    }
+    if (limit === 21) {
+        const audio = new Audio('21.mp3');
+         audio.play();
+    }
+    if (limit === 67) {
+        const audio = new Audio('something.mp3');
+         audio.play();
+    }
+     document.getElementById("counter").innerHTML = counter;
+    limitElement.innerHTML = "You have this many tries to get " + goal + " until you DIE: " + limit;
+  document.getElementById("thing").innerHTML = something;
+if (limit === 10) {
+const stylething = document.getElementById("limit")
+stylething.style.color = 'red';
+    alert("Warning.. you have only 10 tries left..")
+  }
+if (limit === 5) {
+const stylething = document.getElementById("limit")
+stylething.style.color = 'rgb(100,0,0)';
+  }
+if (limit <= 0) {
+    alert("heh, you didn't reach the goal, DIE.");
+const audio = new Audio('scary.mp3');
+         audio.play();
+    const stylething2 = document.body;
+stylething2.style.backgroundImage = 'url("https://www.indiatimes.com/thumb/123963169.cms?imgsize=46526&width=616&resizemode=4")';
+setTimeout (() => {
+    window.location.reload();
+    },2000 )
+
+  }
+  if (something === goal) {
+ const audio = new Audio('testthing.mp3');
+         audio.play();
+const stylething2 = document.body;
+stylething2.style.backgroundImage = 'url("https://img.freepik.com/premium-photo/number-67_2227-1439.jpg")';
+let thinguh = localStorage.getItem("WinCounter")
+if (thinguh === null) {
+    thinguh = 0;
+} else {
+    thinguh = parseInt(thinguh);
+}
+thinguh++;
+localStorage.setItem("WinCounter", thinguh)
+    alert("JACKPOT 67!");
+document.getElementById("counter").innerHTML = "The counter has resetted and has stopped at " + counter + " (press the button to restart)";
+counter = 0;
+limitElement.innerHTML = "You have this many tries to get " + goal + " until you DIE: " + limit;
+      limit = 0;
+  }
+if (something === -67) {
+ const audio = new Audio('evil67.mp3');
+         audio.play();
+const stylething2 = document.body
+stylething2.style.backgroundColor = 'black';
+const stylething3 = document.getElementById("thing")
+stylething3.style.color = 'white';
+const button = document.getElementById("Apply1");
+button.remove()
+const button2 = document.getElementById("Apply2");
+button2.remove()
+const button3 = document.getElementById("buy1");
+button3.remove()
+const button4 = document.getElementById("buy2");
+button4.remove()
+const button5 = document.getElementById("buy3");
+button5.remove()
+const button6 = document.getElementById("trigger");
+button6.disabled = true;
+    alert("...");
+document.getElementById("counter").innerHTML = "The counter has resetted and has stopped at " + counter + " (press the button to restart)";
+counter = 0;
+limitElement.innerHTML = "You have this many tries to get " + goal + " until you DIE: " + limit;
+      limit = 0;
+      setTimeout(() => { stylething3.textContent = "HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING " },5000)
+  
+  setTimeout(() => { button6.textContent = "HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING HE IS COMING " } ,6000)
+  setTimeout(() => { stylething2.style.backgroundImage = 'url("https://www.indiatimes.com/thumb/123963169.cms?imgsize=46526&width=616&resizemode=4")'; },8000)
+  setTimeout(() => { window.location.reload(); },10500) }
+     if (limit <= -1) {
+    window.location.reload();
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<base href="https://cdn.jsdelivr.net/gh/67-Factory/web-ports@main/notawebportagian/">
+<title>KIRK CLICKER</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+/* ════════════════════════════════════════
+   TOKENS
+════════════════════════════════════════ */
+:root {
+  --bg:        #080c12;
+  --surface:   #0e1520;
+  --surface2:  #141d2b;
+  --border:    rgba(255,255,255,0.07);
+  --border-hi: rgba(200,160,80,0.45);
+  --gold:      #c89b3c;
+  --gold-lt:   #e8b84b;
+  --gold-dim:  rgba(200,155,60,0.15);
+  --red:       #c0392b;
+  --red-lt:    #e74c3c;
+  --red-dim:   rgba(192,57,43,0.15);
+  --green:     #27ae60;
+  --green-dim: rgba(39,174,96,0.15);
+  --text:      #d4c9b8;
+  --text-dim:  rgba(212,201,184,0.45);
+  --text-faint:rgba(212,201,184,0.22);
+  --radius:    10px;
+  --radius-lg: 16px;
+}
+
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+html { height:100%; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* noise grain overlay */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.5;
+}
+
+/* ambient glows */
+body::after {
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 40% at 15% 60%, rgba(192,57,43,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 50% at 85% 25%, rgba(200,155,60,0.05) 0%, transparent 70%);
+}
+
+/* ════════════════════════════════════════
+   APP SHELL
+════════════════════════════════════════ */
+.app {
+  position: relative; z-index:1;
+  display: flex; flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ════════════════════════════════════════
+   HEADER
+════════════════════════════════════════ */
+header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 24px;
+  padding: 0 32px;
+  height: 58px;
+  background: rgba(14,21,32,0.92);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: sticky; top:0; z-index:100;
+}
+
+.logo {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 1.35rem;
+  letter-spacing: 3px;
+  color: var(--gold);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.logo span {
+  display: inline-block;
+  width: 6px; height: 6px;
+  background: var(--red-lt);
+  border-radius: 50%;
+  margin: 0 6px 2px;
+  vertical-align: middle;
+  animation: blink 1.4s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+.header-center {
+  display: flex; align-items: center; justify-content: center; gap: 20px;
+}
+
+/* music visualizer bars */
+#musicVis {
+  display: flex; align-items: flex-end; gap: 3px; height: 20px;
+}
+.vis-bar {
+  width: 3px;
+  background: var(--gold);
+  border-radius: 2px;
+  opacity: 0.6;
+  animation: vbar var(--spd,.5s) ease-in-out infinite alternate;
+}
+@keyframes vbar { from{height:3px} to{height:var(--h,16px)} }
+
+#nowPlaying {
+  font-size: .72rem;
+  font-weight: 500;
+  letter-spacing: .5px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.header-right {
+  display: flex; align-items: center; gap: 20px;
+}
+.save-indicator {
+  font-size: .68rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  transition: color .3s;
+}
+.save-indicator.saving { color: var(--green); }
+.header-total {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: .85rem;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* ════════════════════════════════════════
+   NAV TABS
+════════════════════════════════════════ */
+.tabs {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  gap: 0;
+}
+.tab-btn {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: .78rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 14px 20px 12px;
+  background: none; border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  position: relative;
+  transition: color .2s;
+}
+.tab-btn::after {
+  content:'';
+  position:absolute; bottom:0; left:20px; right:20px; height:2px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--gold); }
+.tab-btn.active::after { transform: scaleX(1); }
+
+/* ════════════════════════════════════════
+   CONTENT AREA
+════════════════════════════════════════ */
+.content {
+  flex:1; display:none;
+  padding: 28px 32px;
+  animation: fadeUp .28s ease;
+}
+.content.active { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+#tab-settings.active, #tab-skins.active { display: block; }
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(14px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ════════════════════════════════════════
+   GAME TAB — 3 cols
+════════════════════════════════════════ */
+
+/* ── STAT COLUMNS ── */
+.stats-col {
+  width: 210px;
+  display: flex; flex-direction: column; gap: 8px;
+  flex-shrink: 0;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  transition: border-color .2s, transform .2s;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content:'';
+  position: absolute;
+  top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+  opacity:0;
+  transition: opacity .3s;
+}
+.stat-card:hover { border-color: var(--border-hi); transform: translateY(-1px); }
+.stat-card:hover::before { opacity:1; }
+
+.stat-card.danger { border-color: rgba(192,57,43,.25); }
+.stat-card.danger:hover { border-color: rgba(192,57,43,.55); }
+.stat-card.danger .stat-val { color: var(--red-lt); }
+.stat-card.danger::before { background: linear-gradient(90deg, transparent, var(--red-dim), transparent); }
+
+.stat-lbl {
+  font-size: .6rem;
+  font-weight: 600;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 6px;
+}
+.stat-val {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 1.6rem;
+  color: var(--gold);
+  line-height: 1;
+  letter-spacing: .5px;
+}
+.stat-sub {
+  font-size: .62rem;
+  color: var(--text-faint);
+  margin-top: 4px;
+}
+
+/* milestone list inside stat card */
+.milestone-list { display:flex; flex-direction:column; gap:4px; margin-top:4px; }
+.ms-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .68rem;
+  font-weight: 500;
+  color: var(--text-faint);
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.ms-item:last-child { border-bottom:none; }
+.ms-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  flex-shrink:0;
+  transition: background .4s;
+}
+.ms-item.done { color: var(--gold); }
+.ms-item.done .ms-dot { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+
+/* ragebait stat card special */
+.stat-card.ragebait { border-color: rgba(231,76,60,.2); }
+.stat-card.ragebait:hover { border-color: rgba(231,76,60,.5); }
+.stat-card.ragebait::before { background: linear-gradient(90deg, transparent, rgba(231,76,60,.2), transparent); }
+.stat-card.ragebait .stat-val { color: var(--red-lt); }
+.stat-card.ragebait .stat-sub { color: rgba(231,76,60,.45); }
+
+/* ragebait flash overlay */
+.ragebait-flash {
+  position: fixed; inset:0;
+  pointer-events:none; z-index:9998;
+  background: radial-gradient(circle, rgba(231,76,60,.18) 0%, transparent 65%);
+  animation: rbFlash .6s ease-out forwards;
+}
+@keyframes rbFlash {
+  0%   { opacity:1; }
+  100% { opacity:0; }
+}
+
+/* upgrade type tag */
+.upg-type {
+  font-size:.55rem; letter-spacing:1.5px; text-transform:uppercase;
+  padding:2px 6px; border-radius:3px;
+  font-family:'Black Han Sans',sans-serif;
+}
+.upg-type.cps-tag   { background:rgba(200,155,60,.15);  color:var(--gold-lt); }
+.upg-type.click-tag { background:rgba(52,152,219,.15);   color:#5dade2; }
+
+/* ── CENTER CLICK PANEL ── */
+.click-panel {
+  flex: 1; min-width: 280px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 18px;
+}
+
+/* threat meter */
+.threat-wrap { width: 100%; }
+.threat-hd {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 7px;
+}
+.threat-title {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: .65rem; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--red-lt);
+}
+.threat-pct-lbl {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: .65rem; letter-spacing: 1px;
+  color: var(--text-faint);
+}
+.threat-track {
+  width:100%; height:6px;
+  background: rgba(255,255,255,.06);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.threat-fill {
+  height:100%;
+  background: linear-gradient(90deg, var(--green), #f39c12, var(--red-lt));
+  border-radius: 99px;
+  width: 0%;
+  transition: width .5s ease;
+  box-shadow: 0 0 8px rgba(231,76,60,.4);
+}
+.threat-status {
+  font-size: .62rem;
+  font-weight: 500;
+  color: var(--text-faint);
+  margin-top: 5px;
+  text-align: right;
+  letter-spacing: .3px;
+}
+
+/* click counter */
+.click-counter-wrap { text-align:center; }
+.click-count {
+  font-family: 'Black Han Sans', sans-serif;
+  font-size: 3.8rem;
+  color: var(--gold);
+  letter-spacing: 2px;
+  line-height: 1;
+  transition: transform .08s;
+  display: inline-block;
+}
+.click-count.bump {
+  animation: cBump .14s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes cBump {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+.cps-lbl {
+  font-size: .72rem;
+  font-weight: 500;
+  color: var(--text-faint);
+  letter-spacing: .3px;
+  margin-top: 4px;
+}
+
+/* KIRK BUTTON */
+.kirk-btn-wrap {
+  position: relative;
+  display: flex; align-items:center; justify-content:center;
+  width: 230px; height: 230px;
+}
+
+/* pulsing rings */
+.k-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid var(--gold);
+  animation: kring 2.4s ease-out infinite;
+  pointer-events: none;
+}
+.k-ring:nth-child(2) { animation-delay:.8s; }
+.k-ring:nth-child(3) { animation-delay:1.6s; }
+@keyframes kring {
+  0%   { width:230px; height:230px; opacity:.5; }
+  100% { width:360px; height:360px; opacity:0; }
+}
+
+.kirk-btn {
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  background: var(--surface2);
+  cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+  z-index: 1;
+  box-shadow:
+    0 0 0 6px rgba(200,155,60,.06),
+    0 12px 40px rgba(0,0,0,.6),
+    inset 0 0 30px rgba(0,0,0,.4);
+  animation: kirkFloat 3.5s ease-in-out infinite;
+  transition: box-shadow .2s, border-color .2s;
+}
+@keyframes kirkFloat {
+  0%,100% { transform: translateY(0) rotate(-.8deg); }
+  50%      { transform: translateY(-10px) rotate(.8deg); }
+}
+.kirk-btn:hover {
+  border-color: var(--gold-lt);
+  box-shadow:
+    0 0 0 12px rgba(200,155,60,.1),
+    0 18px 50px rgba(0,0,0,.65),
+    inset 0 0 30px rgba(0,0,0,.3);
+}
+.kirk-btn:active {
+  animation: none !important;
+  transform: scale(.88) rotate(-4deg) !important;
+  border-color: var(--red-lt) !important;
+  box-shadow:
+    0 0 0 20px rgba(192,57,43,.12),
+    0 4px 12px rgba(0,0,0,.5),
+    inset 0 0 30px rgba(0,0,0,.4) !important;
+  transition: transform .05s, box-shadow .05s;
+}
+#kirkImg {
+  width:100%; height:100%;
+  object-fit: cover; border-radius:50%;
+  display: block; pointer-events:none;
+  /* shown only when src is valid */
+}
+/* placeholder when image unavailable */
+.kirk-placeholder {
+  width:100%; height:100%;
+  border-radius:50%;
+  background: linear-gradient(135deg, var(--surface2), #0a1018);
+  display: flex; align-items:center; justify-content:center;
+}
+.kirk-placeholder-text {
+  font-family:'Black Han Sans',sans-serif;
+  font-size:.75rem; letter-spacing:2px;
+  color:var(--text-faint); text-align:center;
+}
+
+/* click floaters */
+.floater {
+  position: fixed;
+  font-family:'Black Han Sans',sans-serif;
+  font-size: 1.2rem;
+  letter-spacing:1px;
+  color: var(--gold-lt);
+  pointer-events: none;
+  z-index: 9999;
+  text-shadow: 0 2px 12px rgba(0,0,0,.8);
+  animation: fltUp .9s ease-out forwards;
+}
+@keyframes fltUp {
+  0%   { opacity:1; transform:translateY(0) scale(1) rotate(var(--r1)); }
+  100% { opacity:0; transform:translateY(-75px) scale(1.4) rotate(var(--r2)); }
+}
+
+/* milestone flash */
+.ms-flash {
+  position: fixed; inset:0;
+  pointer-events:none; z-index:9998;
+  background: radial-gradient(circle, rgba(200,155,60,.15) 0%, transparent 65%);
+  animation: msFlash .55s ease-out forwards;
+}
+@keyframes msFlash {
+  0%   { opacity:1; }
+  100% { opacity:0; }
+}
+
+/* ════════════════════════════════════════
+   UPGRADES TAB
+════════════════════════════════════════ */
+.upgrades-panel { width:100%; }
+.panel-title {
+  font-family:'Black Han Sans',sans-serif;
+  font-size:1.1rem; letter-spacing:3px; text-transform:uppercase;
+  color:var(--gold); margin-bottom:20px; text-align:center;
+}
+.upgrade-grid { display:grid; gap:8px; }
+
+.upg-card {
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all .2s;
+  position: relative; overflow:hidden;
+}
+.upg-card::before {
+  content:'';
+  position:absolute; left:0; top:0; bottom:0; width:3px;
+  background: var(--gold);
+  transform: scaleY(0);
+  transition: transform .2s;
+  border-radius: 3px 0 0 3px;
+}
+.upg-card.affordable:hover { border-color: var(--border-hi); transform: translateX(4px); background:var(--surface2); }
+.upg-card.affordable:hover::before { transform: scaleY(1); }
+.upg-card.affordable:active { transform: scale(.98) translateX(2px); }
+.upg-card.cant-afford { opacity:.38; cursor:not-allowed; }
+.upg-card.cant-afford:hover { transform:none; }
+
+.upg-icon {
+  width:44px; height:44px;
+  border-radius:10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Black Han Sans',sans-serif;
+  font-size:1rem; letter-spacing:1px;
+  color: var(--gold);
+  flex-shrink:0;
+}
+.upg-info {}
+.upg-name {
+  font-family:'Black Han Sans',sans-serif;
+  font-size:.88rem; letter-spacing:1px; color:var(--text);
+  display:flex; align-items:center; gap:8px;
+}
+.upg-count {
+  font-size:.68rem; letter-spacing:.5px;
+  color:var(--green); background:var(--green-dim);
+  padding:1px 6px; border-radius:4px;
+}
+.upg-desc {
+  font-size:.7rem; font-weight:400;
+  color:var(--text-faint); margin-top:3px;
+}
+.upg-cps { color:var(--gold); font-weight:600; }
+.upg-cost {
+  font-family:'Black Han Sans',sans-serif;
+  font-size:.88rem; letter-spacing:1px;
+  color:var(--gold); text-align:right; white-space:nowrap;
+}
+.upg-cost-lbl {
+  font-size:.58rem; letter-spacing:1px; text-transform:uppercase;
+  color:var(--text-faint); margin-bottom:2px;
+}
+
+/* ════════════════════════════════════════
+   SETTINGS TAB
+════════════════════════════════════════ */
+.settings-wrap { max-width:620px; margin:0 auto; }
+
+.section-title {
+  font-family:'Black Han Sans',sans-serif;
+  font-size:.65rem; letter-spacing:3px; text-transform:uppercase;
+  color:var(--text-faint);
+  padding-bottom:10px; margin-bottom:16px;
+  border-bottom:1px solid var(--border);
+}
+.settings-section { margin-bottom:32px; }
+
+.music-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:8px; margin-bottom:18px; }
+.music-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:14px;
+  cursor:pointer;
+  transition:all .2s;
+  position:relative;
+}
+.music-card:hover { border-color:var(--border-hi); transform:translateY(-2px); }
+.music-card.selected { border-color:var(--gold); background:var(--gold-dim); }
+.music-card.selected::after {
+  content:'NOW PLAYING';
+  position:absolute; top:-8px; right:10px;
+  font-family:'Black Han Sans',sans-serif;
+  font-size:.5rem; letter-spacing:1.5px;
+  background:var(--gold); color:var(--bg);
+  padding:2px 6px; border-radius:3px;
+}
+.music-card.selected-off::after { content:'SELECTED'; }
+.m-name {
+  font-family:'Black Han Sans',sans-serif;
+  font-size:.85rem; letter-spacing:1px;
+  color:var(--text); margin-bottom:3px;
+}
+.m-vibe {
+  font-size:.62rem; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--text-faint);
+}
+.m-file {
+  font-size:.58rem; font-family:monospace;
+  color:rgba(255,255,255,.18); margin-top:5px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.music-active-dot {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--green);
+  display:inline-block; margin-right:6px;
+  box-shadow:0 0 6px var(--green);
+  animation:blink 1s ease infinite;
+}
+
+.vol-row {
+  display:flex; align-items:center; gap:14px;
+  padding:12px 16px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+}
+.vol-label {
+  font-family:'Black Han Sans',sans-serif;
+  font-size:.65rem; letter-spacing:2px; text-transform:uppercase;
+  color:var(--text-dim); min-width:64px;
+}
+input[type=range] {
+  flex:1; accent-color:var(--gold); cursor:pointer;
+  height:3px; border-radius:99px;
+}
+.vol-val {
+  font-family:'Black Han Sans',sans-serif;
+  font-size:.82rem; letter-spacing:1px;
+  color:var(--gold); min-width:40px; text-align:right;
+}
+
+.danger-zone {
+  display:flex; align-items:center; gap:16px;
+  flex-wrap:wrap;
+}
+.btn-danger {
+  font-family:'Black Han Sans',sans-serif;
+  font-size:.72rem; letter-spacing:2px; text-transform:uppercase;
+  padding:10px 22px;
+  background:var(--red-dim); border:1px solid rgba(192,57,43,.4);
+  border-radius:var(--radius); color:var(--red-lt);
+  cursor:pointer; transition:all .2s;
+}
+.btn-danger:hover { background:rgba(192,57,43,.3); border-color:var(--red-lt); }
+.save-status-text {
+  font-size:.68rem; color:var(--text-faint); letter-spacing:.3px;
+}
+
+/* ════════════════════════════════════════
+   SKINS TAB
+════════════════════════════════════════ */
+.skins-wrap { max-width:740px; margin:0 auto; }
+.skins-hint {
+  font-size:.72rem; color:var(--text-faint);
+  text-align:center; margin-bottom:20px; line-height:1.6;
+}
+.skins-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(148px,1fr)); gap:10px;
+}
+.skin-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:18px 12px 14px;
+  cursor:pointer; text-align:center;
+  transition:all .22s; position:relative;
+}
+.skin-card:hover { border-color:var(--border-hi); transform:translateY(-4px); box-shadow:0 12px 32px rgba(0,0,0,.35); }
+.skin-card.selected { border-color:var(--gold); background:var(--gold-dim); }
+
+.skin-prev-wrap {
+  width:76px; height:76px; border-radius:50%; margin:0 auto 12px;
+  overflow:hidden;
+  border:2px solid var(--border);
+  background:var(--surface2);
+  transition:border-color .2s;
+}
+.skin-card.selected .skin-prev-wrap { border-color:var(--gold); }
+.skin-preview { width:100%; height:100%; object-fit:cover; display:block; }
+.skin-no-img {
+  width:100%; height:100%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Black Han Sans',sans-serif;
+  font-size:.6rem; letter-spacing:1px;
+  color:var(--text-faint);
+}
+
+.sk-name {
+  font-family:'Black Han Sans',sans-serif;
+  font-size:.82rem; letter-spacing:1px; color:var(--text);
+  margin-bottom:4px;
+}
+.sk-file {
+  font-size:.58rem; font-family:monospace;
+  color:var(--text-faint); overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap;
+}
+.rarity-badge {
+  position:absolute; top:10px; right:10px;
+  font-family:'Black Han Sans',sans-serif;
+  font-size:.5rem; letter-spacing:1.5px; text-transform:uppercase;
+  padding:2px 7px; border-radius:4px;
+}
+.rarity-common    { background:rgba(255,255,255,.08); color:rgba(255,255,255,.45); }
+.rarity-uncommon  { background:rgba(39,174,96,.2);   color:#2ecc71; }
+.rarity-rare      { background:rgba(52,152,219,.2);  color:#5dade2; }
+.rarity-epic      { background:rgba(142,68,173,.25); color:#bb8fce; }
+.rarity-legendary { background:var(--gold-dim);      color:var(--gold-lt); }
+
+.selected-pip {
+  position:absolute; top:-6px; left:50%;
+  transform:translateX(-50%);
+  font-family:'Black Han Sans',sans-serif;
+  font-size:.5rem; letter-spacing:1.5px;
+  background:var(--gold); color:var(--bg);
+  padding:2px 8px; border-radius:3px; white-space:nowrap;
+}
+
+/* ════════════════════════════════════════
+   ASSASSINATION OVERLAY
+════════════════════════════════════════ */
+.assassin-overlay {
+  display:none; position:fixed; inset:0; z-index:10000;
+  background:rgba(4,6,10,.97);
+  flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; gap:20px; padding:32px;
+}
+.assassin-overlay.show { display:flex; animation:aReveal .8s ease; }
+@keyframes aReveal {
+  from { opacity:0; } to { opacity:1; }
+}
+.assassin-label {
+  font-size:.7rem; letter-spacing:4px; text-transform:uppercase;
+  color:var(--red-lt); font-weight:600;
+  animation:blink .8s ease infinite;
+}
+.assassin-title {
+  font-family:'Black Han Sans',sans-serif;
+  font-size:4rem; letter-spacing:4px; text-transform:uppercase;
+  color:var(--red-lt);
+  text-shadow:0 0 60px rgba(231,76,60,.5);
+  line-height:1;
+}
+.assassin-sub {
+  font-size:1rem; color:var(--text-dim); max-width:420px;
+  line-height:1.7;
+}
+.assassin-stats {
+  font-family:'Black Han Sans',sans-serif;
+  font-size:1.1rem; letter-spacing:1px;
+  color:var(--gold);
+}
+.btn-restart {
+  font-family:'Black Han Sans',sans-serif;
+  font-size:.85rem; letter-spacing:3px; text-transform:uppercase;
+  padding:14px 40px;
+  background:var(--red-dim); border:1px solid var(--red-lt);
+  border-radius:var(--radius); color:var(--red-lt);
+  cursor:pointer; transition:all .2s;
+  animation:restartBounce 1.2s ease-in-out infinite;
+}
+@keyframes restartBounce {
+  0%,100% { transform:scale(1); }
+  50%      { transform:scale(1.05); }
+}
+.btn-restart:hover { background:var(--red-dim); filter:brightness(1.3); }
+
+/* ════════════════════════════════════════
+   TOAST
+════════════════════════════════════════ */
+.toast {
+  position:fixed; bottom:24px; left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:var(--surface2);
+  border:1px solid var(--border-hi);
+  border-radius:var(--radius);
+  padding:10px 22px;
+  font-family:'Black Han Sans',sans-serif;
+  font-size:.75rem; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--gold);
+  z-index:9997; transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 8px 32px rgba(0,0,0,.6);
+  white-space:nowrap;
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+/* ════════════════════════════════════════
+   SCROLLBAR
+════════════════════════════════════════ */
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(255,255,255,.1); border-radius:99px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ══ HEADER ══ -->
+  <header>
+    <div class="logo">Kirk<span></span>Clicker</div>
+    <div class="header-center">
+      <div id="musicVis"></div>
+      <div id="nowPlaying"></div>
+    </div>
+    <div class="header-right">
+      <div class="save-indicator" id="saveInd">SAVED</div>
+      <div class="header-total" id="hdrTotal">0 CLICKS</div>
+    </div>
+  </header>
+
+  <!-- ══ TABS ══ -->
+  <nav class="tabs">
+    <button class="tab-btn active" onclick="switchTab('game',this)">CLICK</button>
+    <button class="tab-btn"        onclick="switchTab('upgrades',this)">UPGRADES</button>
+    <button class="tab-btn"        onclick="switchTab('skins',this)">SELECT KIRK</button>
+    <button class="tab-btn"        onclick="switchTab('settings',this)">SETTINGS</button>
+  </nav>
+
+  <!-- ══════════════════════════════════════
+       GAME TAB
+  ══════════════════════════════════════ -->
+  <div id="tab-game" class="content active">
+
+    <!-- LEFT STATS -->
+    <div class="stats-col">
+      <div class="stat-card">
+        <div class="stat-lbl">Available</div>
+        <div class="stat-val" id="sc-avail">0</div>
+        <div class="stat-sub">spend on upgrades</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Total Clicks</div>
+        <div class="stat-val" id="sc-total">0</div>
+        <div class="stat-sub">all time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Auto / Second</div>
+        <div class="stat-val" id="sc-cps">0</div>
+        <div class="stat-sub">from upgrades</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Manual Clicks</div>
+        <div class="stat-val" id="sc-manual">0</div>
+        <div class="stat-sub">by your hand</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Session Time</div>
+        <div class="stat-val" id="sc-time">0:00</div>
+        <div class="stat-sub">time active</div>
+      </div>
+      <div class="stat-card ragebait">
+        <div class="stat-lbl">Kirks Ragebait</div>
+        <div class="stat-val" id="sc-ragebait">0</div>
+        <div class="stat-sub">1 per 100 clicks</div>
+      </div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="click-panel">
+
+      <div class="threat-wrap" style="width:100%;">
+        <div class="threat-hd">
+          <div class="threat-title">Assassination Threat</div>
+          <div class="threat-pct-lbl" id="tPct">0%</div>
+        </div>
+        <div class="threat-track"><div class="threat-fill" id="tFill"></div></div>
+        <div class="threat-status" id="tStatus">Totally Safe</div>
+      </div>
+
+      <div class="click-counter-wrap">
+        <div class="click-count" id="clickCount">0</div>
+        <div class="cps-lbl" id="cpsLbl">+0 clicks / sec</div>
+      </div>
+
+      <div class="kirk-btn-wrap">
+        <div class="k-ring"></div>
+        <div class="k-ring"></div>
+        <div class="k-ring"></div>
+        <button class="kirk-btn" id="kirkBtn" onclick="handleClick(event)">
+          <img id="kirkImg" src="" alt="" style="display:none;">
+          <div class="kirk-placeholder" id="kirkPlaceholder">
+            <div class="kirk-placeholder-text">NO IMAGE<br>SELECTED</div>
+          </div>
+        </button>
+      </div>
+
+      <div style="font-size:.65rem;font-weight:500;color:var(--text-faint);letter-spacing:.5px;text-align:center;">
+        Click Kirk to earn — upgrades auto-generate clicks
+      </div>
+
+    </div>
+
+    <!-- RIGHT STATS -->
+    <div class="stats-col">
+      <div class="stat-card danger">
+        <div class="stat-lbl">Threat Level</div>
+        <div class="stat-val" id="sc-threat">0%</div>
+        <div class="stat-sub">assassination risk</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Upgrades Owned</div>
+        <div class="stat-val" id="sc-upgs">0</div>
+        <div class="stat-sub">total purchased</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Click Power</div>
+        <div class="stat-val" id="sc-mult">x1</div>
+        <div class="stat-sub">per click</div>
+      </div>
+      <div class="stat-card" style="flex:1;">
+        <div class="stat-lbl" style="margin-bottom:10px;">Milestones</div>
+        <div class="milestone-list" id="msList"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       UPGRADES TAB
+  ══════════════════════════════════════ -->
+  <div id="tab-upgrades" class="content">
+    <div class="upgrades-panel">
+      <div class="panel-title">Upgrades</div>
+      <div class="upgrade-grid" id="upgradeGrid"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SKINS TAB
+  ══════════════════════════════════════ -->
+  <div id="tab-skins" class="content">
+    <div class="skins-wrap">
+      <div class="panel-title">Select Your Kirk</div>
+      <p class="skins-hint">Place PNG files in the same folder as this HTML. Filenames must match exactly.</p>
+      <div class="skins-grid" id="skinsGrid"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SETTINGS TAB
+  ══════════════════════════════════════ -->
+  <div id="tab-settings" class="content">
+    <div class="settings-wrap">
+      <div class="panel-title">Settings</div>
+
+      <div class="settings-section">
+        <div class="section-title">Music — place MP3 files next to this HTML</div>
+        <div class="music-grid" id="musicGrid"></div>
+        <div class="vol-row">
+          <div class="vol-label">Volume</div>
+          <input type="range" id="volSlider" min="0" max="100" value="60" oninput="setVolume(this.value)">
+          <div class="vol-val" id="volVal">60%</div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="section-title">Save &amp; Reset</div>
+        <div class="danger-zone">
+          <button class="btn-danger" onclick="manualSave()">Save Now</button>
+          <button class="btn-danger" onclick="confirmReset()">Reset Game</button>
+          <div class="save-status-text" id="saveStatusTxt">Auto-saves every 10 seconds</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- end .app -->
+
+<!-- ASSASSINATION OVERLAY -->
+<div class="assassin-overlay" id="assassinOverlay">
+  <div class="assassin-label">Breaking News</div>
+  <div class="assassin-title">Kirk Got Got</div>
+  <div class="assassin-sub">
+    30 billion clicks. The ragebait worked too well. The libs didn't just get owned — they snapped.<br>Charlie Kirk has been removed from the internet permanently.
+  </div>
+  <div class="assassin-stats" id="assassinStats"></div>
+  <button class="btn-restart" onclick="resetGame()">Play Again</button>
+</div>
+
+<div class="toast" id="toast"></div>
+<audio id="bgAudio" loop></audio>
+
+<script>
+/* ══════════════════════════════════════
+   CONSTANTS
+══════════════════════════════════════ */
+const SAVE_KEY      = 'kirkclicker_save';
+const SETTINGS_KEY  = 'kirkclicker_settings';
+const ASSASSINATION = 30_000_000_000; // 30 billion
+
+const UPGRADES = [
+  // ── AUTO CLICKERS (cps) ──────────────────────────────────────────────
+  { id:'intern',    abbr:'INT', name:'Unpaid Intern',       type:'cps',   cost:10,         cps:.1,    clickBonus:0, desc:'Does your bidding for free. Barely.',              threat:0.001 },
+  { id:'maga',      abbr:'HAT', name:'MAGA Hat Factory',   type:'cps',   cost:50,         cps:.5,    clickBonus:0, desc:'Cranks out hats and vibes around the clock.',       threat:0.003 },
+  { id:'podcast',   abbr:'POD', name:'Daily Podcast',      type:'cps',   cost:150,        cps:1.5,   clickBonus:0, desc:'Hot takes generate hot clicks.',                   threat:0.006 },
+  { id:'bots',      abbr:'BOT', name:'Twitter Bot Farm',   type:'cps',   cost:400,        cps:4,     clickBonus:0, desc:'Fully automated Kirk posting, 24/7.',               threat:0.01  },
+  { id:'campus',    abbr:'BUS', name:'Campus Tour Bus',    type:'cps',   cost:1000,       cps:10,    clickBonus:0, desc:'Spreading takes coast to coast.',                   threat:0.02  },
+  { id:'pac',       abbr:'PAC', name:'Super PAC',          type:'cps',   cost:2500,       cps:25,    clickBonus:0, desc:'Money talks. Kirk talks louder.',                   threat:0.04  },
+  { id:'cable',     abbr:'TV',  name:'Cable News Deal',    type:'cps',   cost:5000,       cps:60,    clickBonus:0, desc:'Primetime Kirk. Every. Single. Night.',             threat:0.07  },
+  { id:'rally',     abbr:'STD', name:'Stadium Rally',      type:'cps',   cost:12000,      cps:150,   clickBonus:0, desc:'100,000 screaming fans, one mission.',              threat:0.12  },
+  { id:'shadow',    abbr:'SHD', name:'Shadow Government',  type:'cps',   cost:30000,      cps:400,   clickBonus:0, desc:'Kirk goes deep. Dangerously deep.',                 threat:0.2   },
+  { id:'president', abbr:'POT', name:'Presidency Run',     type:'cps',   cost:100000,     cps:1000,  clickBonus:0, desc:'The final gambit. The deep state is watching.',     threat:0.35  },
+  // ── CLICK POWER ──────────────────────────────────────────────────────
+  { id:'coffee',    abbr:'+1',  name:'Extra Strong Coffee',  type:'click', cost:25,       cps:0,  clickBonus:1,     desc:'+1 click per click. Kirk is caffeinated.',          threat:0 },
+  { id:'steroids',  abbr:'+5',  name:'Performance Steroids', type:'click', cost:500,      cps:0,  clickBonus:5,     desc:'+5 clicks per click. Totally legal.',               threat:0 },
+  { id:'gloves',    abbr:'+20', name:'Golden Clicking Gloves',type:'click',cost:3000,     cps:0,  clickBonus:20,    desc:'+20 clicks per click. The hands of a champion.',    threat:0 },
+  { id:'keyboard',  abbr:'+75', name:'Mechanical Keyboard',  type:'click', cost:15000,    cps:0,  clickBonus:75,    desc:'+75 clicks per click. Cherry MX Red switches.',     threat:0 },
+  { id:'bionic',    abbr:'+300',name:'Bionic Click Arm',     type:'click', cost:100000,   cps:0,  clickBonus:300,   desc:'+300 per click. Kirk had a procedure.',             threat:0 },
+  { id:'nuclear',   abbr:'+2K', name:'Nuclear Click Device', type:'click', cost:1000000,  cps:0,  clickBonus:2000,  desc:'+2,000 per click. The Pentagon is very upset.',    threat:0 },
+  { id:'godhand',   abbr:'+10K',name:'The Hand of God',      type:'click', cost:50000000, cps:0,  clickBonus:10000, desc:'+10,000 per click. Kirk ascends.',                  threat:0 },
+];
+
+const MILESTONES = [
+  { id:'m50',    label:'50 Clicks',        target:50           },
+  { id:'m250',   label:'250 Clicks',       target:250          },
+  { id:'m500',   label:'500 Clicks',       target:500          },
+  { id:'m1k',    label:'1,000 Clicks',     target:1000         },
+  { id:'m5k',    label:'5,000 Clicks',     target:5000         },
+  { id:'m100k',  label:'100K Clicks',      target:100000       },
+  { id:'m1m',    label:'1M Clicks',        target:1000000      },
+  { id:'m1b',    label:'1B Clicks',        target:1000000000   },
+];
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let state = defaultState();
+
+function defaultState() {
+  return {
+    clicks:0, totalClicks:0, manualClicks:0,
+    cps:0, threat:0,
+    ragebait:0,          // total ragebait successes
+    lastRagebaitAt:0,    // totalClicks when last ragebait triggered
+    upgrades:{},
+    milestones:{},
+    selectedSkin:null,
+    assassinated:false,
+    startTime:Date.now(),
+  };
+}
+
+/* ══════════════════════════════════════
+   SETTINGS (separate from game save)
+══════════════════════════════════════ */
+let settings = defaultSettings();
+
+function defaultSettings() {
+  return { selectedMusic:'off', volume:0.6 };
+}
+
+function saveSettings() {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch(e){}
+}
+
+function loadSettings() {
+  try {
+    const s = localStorage.getItem(SETTINGS_KEY);
+    if (s) settings = { ...defaultSettings(), ...JSON.parse(s) };
+  } catch(e) {}
+  // apply
+  const vs = document.getElementById('volSlider');
+  const vv = document.getElementById('volVal');
+  vs.value = Math.round(settings.volume * 100);
+  vv.textContent = vs.value + '%';
+  bgAudio.volume = settings.volume;
+}
+
+/* ══════════════════════════════════════
+   GAME SAVE / LOAD
+══════════════════════════════════════ */
+function gameSave() {
+  try {
+    const s = {
+      clicks:      state.clicks,
+      totalClicks: state.totalClicks,
+      manualClicks:state.manualClicks,
+      cps:         state.cps,
+      threat:      state.threat,
+      upgrades:    state.upgrades,
+      milestones:  state.milestones,
+      selectedSkin:state.selectedSkin,
+      assassinated:state.assassinated,
+      startTime:   state.startTime,
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(s));
+    flashSaveIndicator();
+  } catch(e) {}
+}
+
+function gameLoad() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    state = { ...defaultState(), ...s };
+  } catch(e) {}
+}
+
+function manualSave() {
+  gameSave();
+  showToast('Game saved');
+  document.getElementById('saveStatusTxt').textContent = 'Saved at ' + new Date().toLocaleTimeString();
+}
+
+function confirmReset() {
+  if (confirm('Reset all progress? This cannot be undone.')) resetGame();
+}
+
+let saveFlashTO;
+function flashSaveIndicator() {
+  const el = document.getElementById('saveInd');
+  el.textContent = 'SAVING...';
+  el.classList.add('saving');
+  clearTimeout(saveFlashTO);
+  saveFlashTO = setTimeout(() => {
+    el.textContent = 'SAVED';
+    el.classList.remove('saving');
+  }, 700);
+}
+
+// auto-save every 10s
+setInterval(gameSave, 10000);
+
+/* ══════════════════════════════════════
+   AUDIO
+══════════════════════════════════════ */
+const bgAudio = document.getElementById('bgAudio');
+let musicData  = [];
+let sfxCtx     = null;
+
+function playMusic(track) {
+  if (!track || !track.file) {
+    bgAudio.pause(); bgAudio.src='';
+    updateVis(0); updateNowPlaying('');
+    return;
+  }
+  bgAudio.src   = track.file;
+  bgAudio.volume = settings.volume;
+  bgAudio.play().catch(() => showToast('Click Kirk to start music'));
+  updateVis(110);
+  updateNowPlaying(track.name);
+}
+function stopMusic() { bgAudio.pause(); bgAudio.src=''; updateVis(0); updateNowPlaying(''); }
+
+function setVolume(val) {
+  settings.volume = val / 100;
+  bgAudio.volume  = settings.volume;
+  document.getElementById('volVal').textContent = val + '%';
+  saveSettings();
+}
+
+function updateVis(bpm) {
+  const vis = document.getElementById('musicVis');
+  vis.innerHTML = '';
+  if (!bpm) return;
+  for (let i=0;i<9;i++) {
+    const b = document.createElement('div');
+    b.className = 'vis-bar';
+    b.style.cssText = `--spd:${280+Math.random()*380}ms;--h:${5+Math.random()*16}px;animation-delay:${i*50}ms`;
+    vis.appendChild(b);
+  }
+}
+function updateNowPlaying(name) {
+  const el = document.getElementById('nowPlaying');
+  if (name) {
+    el.innerHTML = '<span class="music-active-dot"></span>' + name;
+  } else {
+    el.textContent = '';
+  }
+}
+
+// click SFX
+function clickSFX() {
+  try {
+    if (!sfxCtx) sfxCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const o=sfxCtx.createOscillator(), g=sfxCtx.createGain();
+    o.connect(g); g.connect(sfxCtx.destination);
+    o.type='square'; o.frequency.value=780;
+    g.gain.setValueAtTime(0.06, sfxCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, sfxCtx.currentTime+0.07);
+    o.start(); o.stop(sfxCtx.currentTime+0.08);
+  } catch(e) {}
+}
+
+/* ══════════════════════════════════════
+   LOAD JSON DATA
+══════════════════════════════════════ */
+let kriks = [];
+
+async function loadData() {
+  // music.json
+  try { musicData = await (await fetch('music.json')).json(); }
+  catch {
+    musicData = [
+      { id:'banger1', name:"Kirk's Theme",        file:'music_kirks_theme.mp3',    vibe:'presidential' },
+      { id:'banger2', name:'Deep State Bop',       file:'music_deep_state.mp3',     vibe:'conspiracy'   },
+      { id:'banger3', name:'Shooting Star',        file:'music_shooting_star.mp3',  vibe:'meme'         },
+      { id:'banger4', name:'Clicker Anthem',       file:'music_clicker_anthem.mp3', vibe:'hyperpop'     },
+      { id:'off',     name:'Silence',              file:null,                        vibe:'off'          },
+    ];
+  }
+  renderMusicGrid();
+
+  // kriks.json
+  try { kriks = await (await fetch('kriks.json')).json(); }
+  catch {
+    kriks = [
+      { id:'default',    name:'Classic Kirk',  file:'kirk_classic.png',    rarity:'common'    },
+      { id:'sunglasses', name:'Cool Kirk',     file:'kirk_sunglasses.png', rarity:'uncommon'  },
+      { id:'cowboy',     name:'Cowboy Kirk',   file:'kirk_cowboy.png',     rarity:'uncommon'  },
+      { id:'astronaut',  name:'Space Kirk',    file:'kirk_astronaut.png',  rarity:'rare'      },
+      { id:'wizard',     name:'Wizard Kirk',   file:'kirk_wizard.png',     rarity:'rare'      },
+      { id:'golden',     name:'Golden Kirk',   file:'kirk_golden.png',     rarity:'legendary' },
+      { id:'zombie',     name:'Zombie Kirk',   file:'kirk_zombie.png',     rarity:'epic'      },
+      { id:'pixel',      name:'8-Bit Kirk',    file:'kirk_pixel.png',      rarity:'uncommon'  },
+    ];
+  }
+  renderSkinsGrid();
+
+  // apply saved skin
+  if (state.selectedSkin) {
+    const k = kriks.find(x => x.id === state.selectedSkin);
+    if (k) setKirkImage(k.file);
+  } else if (kriks.length) {
+    state.selectedSkin = kriks[0].id;
+    setKirkImage(kriks[0].file);
+  }
+
+  // apply saved music
+  if (settings.selectedMusic && settings.selectedMusic !== 'off') {
+    const m = musicData.find(x => x.id === settings.selectedMusic);
+    if (m && m.file) {
+      // don't autoplay on load — wait for first click
+    }
+  }
+}
+
+/* ══════════════════════════════════════
+   KIRK IMAGE
+══════════════════════════════════════ */
+function setKirkImage(file) {
+  const img = document.getElementById('kirkImg');
+  const ph  = document.getElementById('kirkPlaceholder');
+  const t   = new Image();
+  t.onload  = () => { img.src=file; img.style.display='block'; ph.style.display='none'; };
+  t.onerror = () => { img.style.display='none'; ph.style.display='flex'; };
+  t.src = file;
+}
+
+/* ══════════════════════════════════════
+   RENDER: MUSIC GRID
+══════════════════════════════════════ */
+function renderMusicGrid() {
+  const grid = document.getElementById('musicGrid');
+  grid.innerHTML = '';
+  musicData.forEach(m => {
+    const isSel  = settings.selectedMusic === m.id;
+    const isPlaying = isSel && !!m.file;
+    const card = document.createElement('div');
+    card.className = 'music-card' + (isSel ? (m.file ? ' selected' : ' selected selected-off') : '');
+    card.innerHTML = `
+      <div class="m-name">${m.name}</div>
+      <div class="m-vibe">${m.vibe}</div>
+      <div class="m-file">${m.file || 'no file — silence'}</div>
+    `;
+    card.onclick = () => {
+      settings.selectedMusic = m.id;
+      saveSettings();
+      playMusic(m);
+      renderMusicGrid();
+      showToast(m.file ? 'Now playing: ' + m.name : 'Silence');
+    };
+    grid.appendChild(card);
+  });
+}
+
+/* ══════════════════════════════════════
+   RENDER: SKINS
+══════════════════════════════════════ */
+function renderSkinsGrid() {
+  const grid = document.getElementById('skinsGrid');
+  grid.innerHTML = '';
+  kriks.forEach(k => {
+    const isSel = state.selectedSkin === k.id;
+    const card  = document.createElement('div');
+    card.className = 'skin-card' + (isSel?' selected':'');
+    card.innerHTML = `
+      ${isSel ? '<div class="selected-pip">Active</div>' : ''}
+      <span class="rarity-badge rarity-${k.rarity||'common'}">${k.rarity||'common'}</span>
+      <div class="skin-prev-wrap">
+        <img class="skin-preview" src="${k.file}" alt="${k.name}"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="skin-no-img" style="display:none;">NO IMG</div>
+      </div>
+      <div class="sk-name">${k.name}</div>
+      <div class="sk-file">${k.file}</div>
+    `;
+    card.onclick = () => {
+      state.selectedSkin = k.id;
+      setKirkImage(k.file);
+      gameSave();
+      renderSkinsGrid();
+      showToast('Kirk: ' + k.name);
+    };
+    grid.appendChild(card);
+  });
+}
+
+/* ══════════════════════════════════════
+   RENDER: UPGRADES
+══════════════════════════════════════ */
+function recalcClickMultiplier() {
+  let bonus = 1;
+  UPGRADES.filter(u=>u.type==='click').forEach(u=>{
+    const bought = state.upgrades[u.id]||0;
+    bonus += bought * u.clickBonus;
+  });
+  clickMultiplier = bonus;
+}
+
+function renderUpgrades() {
+  recalcClickMultiplier();
+  const grid = document.getElementById('upgradeGrid');
+  grid.innerHTML = '';
+  UPGRADES.forEach(u => {
+    const bought    = state.upgrades[u.id] || 0;
+    const cost      = Math.floor(u.cost * Math.pow(1.18, bought));
+    const canAfford = state.clicks >= cost;
+    const card = document.createElement('div');
+    card.className = 'upg-card ' + (canAfford ? 'affordable' : 'cant-afford');
+    const typeTag = u.type === 'click'
+      ? `<span class="upg-type click-tag">+${fmtN(u.clickBonus)}/click</span>`
+      : `<span class="upg-type cps-tag">+${u.cps}/s</span>`;
+    card.innerHTML = `
+      <div class="upg-icon">${u.abbr}</div>
+      <div class="upg-info">
+        <div class="upg-name">
+          ${u.name}
+          ${bought>0 ? `<span class="upg-count">x${bought}</span>` : ''}
+          ${typeTag}
+        </div>
+        <div class="upg-desc">${u.desc}</div>
+      </div>
+      <div>
+        <div class="upg-cost-lbl">Cost</div>
+        <div class="upg-cost">${fmtN(cost)}</div>
+      </div>
+    `;
+    if (canAfford) {
+      card.onclick = () => {
+        if (state.clicks < cost) return;
+        state.clicks  -= cost;
+        state.upgrades[u.id] = (state.upgrades[u.id]||0)+1;
+        if (u.type === 'cps') state.cps += u.cps;
+        state.threat   = Math.min(state.threat + u.threat, 100);
+        recalcClickMultiplier();
+        card.style.transform='scale(1.03) translateX(6px)';
+        setTimeout(()=>card.style.transform='',180);
+        showToast('Bought: ' + u.name);
+        updateUI(); renderUpgrades(); checkAssassination();
+      };
+    }
+    grid.appendChild(card);
+  });
+}
+
+/* ══════════════════════════════════════
+   CLICK HANDLER
+══════════════════════════════════════ */
+let clickMultiplier = 1;
+function handleClick(evt) {
+  if (state.assassinated) return;
+  clickSFX();
+  if (bgAudio.src && bgAudio.paused) bgAudio.play().catch(()=>{});
+
+  state.clicks       += clickMultiplier;
+  state.totalClicks  += clickMultiplier;
+  state.manualClicks += clickMultiplier;
+  // threat is NOT raised by clicking — only by buying upgrades
+
+  spawnFloater(evt.clientX, evt.clientY, '+' + fmtN(clickMultiplier));
+  bumpCounter();
+  checkRagebait();
+  updateUI();
+  renderUpgrades();
+  checkMilestones();
+  checkAssassination();
+}
+
+function spawnFloater(x, y, text) {
+  const f = document.createElement('div');
+  f.className = 'floater';
+  const r1 = (Math.random()-.5)*24;
+  const r2 = r1 + (Math.random()-.5)*12;
+  f.style.cssText = `left:${x}px;top:${y}px;--r1:${r1}deg;--r2:${r2}deg`;
+  f.textContent = text;
+  document.body.appendChild(f);
+  setTimeout(()=>f.remove(), 900);
+}
+
+let bumpTO;
+function bumpCounter() {
+  const el = document.getElementById('clickCount');
+  el.classList.remove('bump');
+  clearTimeout(bumpTO); void el.offsetWidth;
+  el.classList.add('bump');
+  bumpTO = setTimeout(()=>el.classList.remove('bump'),150);
+}
+
+/* ══════════════════════════════════════
+   RAGEBAIT
+══════════════════════════════════════ */
+const RAGEBAIT_INTERVAL = 100; // every 100 total clicks
+function checkRagebait() {
+  const expected = Math.floor(state.totalClicks / RAGEBAIT_INTERVAL);
+  const current  = state.ragebait;
+  if (expected > current) {
+    const gained = expected - current;
+    state.ragebait = expected;
+    state.lastRagebaitAt = state.totalClicks;
+    // flash red
+    const f = document.createElement('div');
+    f.className = 'ragebait-flash';
+    document.body.appendChild(f);
+    setTimeout(()=>f.remove(), 620);
+    // floater near the stat card — center-left of screen
+    spawnRagebaitFloater(gained);
+    if (gained === 1) showToast('Ragebait successful! Kirk owns the libs.');
+    else showToast(gained + ' ragebaits triggered!');
+    updateUI();
+  }
+}
+
+function spawnRagebaitFloater(count) {
+  const f = document.createElement('div');
+  f.className = 'floater';
+  f.style.cssText = `left:${180 + Math.random()*60}px;top:${200+Math.random()*80}px;--r1:-8deg;--r2:-14deg;color:var(--red-lt);font-size:1rem;`;
+  f.textContent = '+' + count + ' RAGEBAIT';
+  document.body.appendChild(f);
+  setTimeout(()=>f.remove(), 1000);
+}
+
+/* ══════════════════════════════════════
+   MILESTONES
+══════════════════════════════════════ */
+function renderMilestoneList() {
+  const list = document.getElementById('msList');
+  list.innerHTML = '';
+  MILESTONES.forEach(m => {
+    const done = !!state.milestones[m.id];
+    const div  = document.createElement('div');
+    div.className = 'ms-item' + (done?' done':'');
+    div.innerHTML = `<div class="ms-dot"></div>${m.label}`;
+    list.appendChild(div);
+  });
+}
+
+function checkMilestones() {
+  let any = false;
+  MILESTONES.forEach(m => {
+    if (!state.milestones[m.id] && state.totalClicks >= m.target) {
+      state.milestones[m.id] = true;
+      any = true;
+      showToast('Milestone: ' + m.label);
+    }
+  });
+  if (any) { renderMilestoneList(); msFlash(); }
+}
+
+function msFlash() {
+  const f=document.createElement('div'); f.className='ms-flash';
+  document.body.appendChild(f); setTimeout(()=>f.remove(),560);
+}
+
+/* ══════════════════════════════════════
+   ASSASSINATION
+══════════════════════════════════════ */
+function checkAssassination() {
+  if (!state.assassinated && (state.threat>=100||state.totalClicks>=ASSASSINATION))
+    triggerAssassination();
+}
+
+function triggerAssassination() {
+  state.assassinated = true;
+  gameSave();
+  stopMusic();
+  setTimeout(() => {
+    document.getElementById('assassinOverlay').classList.add('show');
+    const elapsed = Math.floor((Date.now()-state.startTime)/1000);
+    document.getElementById('assassinStats').textContent =
+      fmtN(state.totalClicks)+' clicks  —  '+fmtTime(elapsed)+' played';
+    try {
+      if (!sfxCtx) sfxCtx=new(window.AudioContext||window.webkitAudioContext)();
+      const o=sfxCtx.createOscillator(),g=sfxCtx.createGain();
+      o.connect(g);g.connect(sfxCtx.destination);
+      o.type='sawtooth';o.frequency.value=160;
+      g.gain.setValueAtTime(.22,sfxCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,sfxCtx.currentTime+1.5);
+      o.start();o.stop(sfxCtx.currentTime+1.5);
+    } catch(e){}
+  }, 350);
+}
+
+/* ══════════════════════════════════════
+   UPDATE UI
+══════════════════════════════════════ */
+function updateUI() {
+  const fl = n => Math.floor(n);
+  document.getElementById('clickCount').textContent = fmtN(fl(state.clicks));
+  document.getElementById('cpsLbl').textContent     = '+' + fmtN(Math.round(state.cps*10)/10) + ' / sec';
+  document.getElementById('hdrTotal').textContent   = fmtN(fl(state.totalClicks)) + ' CLICKS';
+
+  // threat
+  const pct = Math.min(state.threat, 100);
+  document.getElementById('tFill').style.width  = pct + '%';
+  document.getElementById('tPct').textContent   = pct.toFixed(1) + '%';
+  const statuses = ['Totally Safe','Mildly Suspicious','They Know','Deep State Watching','Imminent'];
+  document.getElementById('tStatus').textContent = statuses[Math.min(fl(pct/25),4)];
+
+  // stat cards
+  document.getElementById('sc-avail').textContent    = fmtN(fl(state.clicks));
+  document.getElementById('sc-total').textContent    = fmtN(fl(state.totalClicks));
+  document.getElementById('sc-cps').textContent      = fmtN(Math.round(state.cps*10)/10);
+  document.getElementById('sc-manual').textContent   = fmtN(fl(state.manualClicks));
+  document.getElementById('sc-threat').textContent   = pct.toFixed(1)+'%';
+  document.getElementById('sc-mult').textContent     = 'x'+fmtN(clickMultiplier);
+  document.getElementById('sc-ragebait').textContent = fmtN(state.ragebait||0);
+
+  let tot=0; Object.values(state.upgrades).forEach(v=>tot+=v);
+  document.getElementById('sc-upgs').textContent   = tot;
+
+  const elapsed = fl((Date.now()-state.startTime)/1000);
+  document.getElementById('sc-time').textContent   = fmtTime(elapsed);
+}
+
+/* ══════════════════════════════════════
+   AUTO CLICKER
+══════════════════════════════════════ */
+setInterval(()=>{
+  if (state.assassinated||state.cps===0) return;
+  const g = state.cps/20;
+  state.clicks      += g;
+  state.totalClicks += g;
+  // passive trickle: 1000 CPS running for ~30 days (2.6M seconds) = ~26% threat
+  // that's 0.00001% per tick at 1000 CPS → state.cps * 0.0000000001 per tick
+  state.threat = Math.min(state.threat + state.cps * 0.0000000003, 100);
+  checkRagebait();
+  updateUI(); checkMilestones(); checkAssassination();
+},50);
+
+// session clock tick
+setInterval(()=>updateUI(),1000);
+
+/* ══════════════════════════════════════
+   RESET
+══════════════════════════════════════ */
+function resetGame() {
+  const skin = state.selectedSkin;
+  state = defaultState();
+  state.selectedSkin = skin;
+  clickMultiplier = 1;
+  localStorage.removeItem(SAVE_KEY);
+  document.getElementById('assassinOverlay').classList.remove('show');
+  stopMusic();
+  updateUI(); renderUpgrades(); renderMilestoneList();
+  if (skin) {
+    const k = kriks.find(x=>x.id===skin);
+    if (k) setKirkImage(k.file);
+  }
+  showToast('Game reset');
+}
+
+/* ══════════════════════════════════════
+   TABS
+══════════════════════════════════════ */
+function switchTab(name, btn) {
+  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+let toastTO;
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTO);
+  toastTO=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+/* ══════════════════════════════════════
+   HELPERS
+══════════════════════════════════════ */
+function fmtN(n) {
+  if(n>=1e12) return (n/1e12).toFixed(2)+'T';
+  if(n>=1e9)  return (n/1e9).toFixed(2)+'B';
+  if(n>=1e6)  return (n/1e6).toFixed(1)+'M';
+  if(n>=1e3)  return (n/1e3).toFixed(1)+'K';
+  return Math.floor(n).toString();
+}
+function fmtTime(s) {
+  const m=Math.floor(s/60); return m+':'+String(s%60).padStart(2,'0');
+}
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+gameLoad();
+loadSettings();
+recalcClickMultiplier();
+updateUI();
+renderUpgrades();
+renderMilestoneList();
+loadData(); // async — renders music/skins when ready
+</script>
+</body>
+</html>
