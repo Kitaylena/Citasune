@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+	<base href = "https://cdn.jsdelivr.net/gh/faralong/all@main/tungclick/">
+    <title>Prank Call: Tung Tung Sahur</title>
+	
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1,minimal-ui=true"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="mobile-web-app-capable" content="yes"/>
+    <meta name="full-screen" content="yes"/>
+    <meta name="screen-orientation" content="portrait"/>
+    <meta name="x5-fullscreen" content="true"/>
+    <meta name="360-fullscreen" content="true"/>
+
+    <meta name="renderer" content="webkit"/>
+    <meta name="force-rendering" content="webkit"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+
+    <link rel="stylesheet" type="text/css" href="./style.css"/>
+    <link rel="icon" href="favicon.ico"/>
+    <link rel="preload" as="font" href="./JingNanBoBoHei-Bold.ttf" type="font/woff2" crossorigin="anonymous">
+    
+    <style>
+  #loading-modal {
+    display: none !important;
+    visibility: hidden !important;
+  }
+</style>
+    <script type="text/javascript" src="./YYGGames6.js"></script>
+    <script src="cc-resolution.js" charset="utf-8"></script>
+<script>var totalGameSize=15000000;
+
+
+
+
+</script>
+<script>(function () {
+  const OLD =
+    "https://cdn.jsdelivr.net/gh/faralong/all@main/tungclick/assets/main/index.js";
+
+  const NEW =
+    "https://cdn.jsdelivr.net/gh/faralong/all@main/tungclick/assets/main/index5.js";
+
+  function swapIfMatch(script) {
+    if (!script || script.tagName !== "SCRIPT") return;
+
+    const src = script.src || script.getAttribute("src");
+    if (!src) return;
+
+    // Normalize comparison (important!)
+    if (src.includes("index.js") && src.includes("tungclick/assets/main")) {
+      script.src = NEW;
+      console.log("[Hooked] Script swapped → index2.js");
+    }
+  }
+
+  // Hook setAttribute
+  const origSetAttr = Element.prototype.setAttribute;
+  Element.prototype.setAttribute = function (name, value) {
+    if (this.tagName === "SCRIPT" && name === "src") {
+      if (value.includes("index.js")) {
+        value = NEW;
+        console.log("[Hooked:setAttribute]");
+      }
+    }
+    return origSetAttr.call(this, name, value);
+  };
+
+  // Hook appendChild (MOST IMPORTANT)
+  const origAppend = Element.prototype.appendChild;
+  Element.prototype.appendChild = function (node) {
+    swapIfMatch(node);
+    return origAppend.call(this, node);
+  };
+
+  // Hook insertBefore
+  const origInsertBefore = Element.prototype.insertBefore;
+  Element.prototype.insertBefore = function (node, ref) {
+    swapIfMatch(node);
+    return origInsertBefore.call(this, node, ref);
+  };
+
+  // Catch already existing scripts
+  document.querySelectorAll("script[src]").forEach(swapIfMatch);
+
+  // Fallback: observe DOM mutations
+  new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      for (const node of m.addedNodes) {
+        swapIfMatch(node);
+      }
+    }
+  }).observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+  });
+
+  console.log("[Hook active] script interceptor running");
+})();</script>
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        html {
+            touch-action: none
+        }
+        @font-face {
+            font-family: "Arial";
+            src: url("JingNanBoBoHei-Bold.ttf");
+        }
+        body {
+            overflow: hidden;
+            /* 页面背景颜色 */
+            background: #f6b7ff;
+        }
+        #GameDiv {
+            position: absolute;
+            margin: 0;
+            overflow: hidden;
+            width:1334px; 
+            height: 750px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+  </head>
+  <body>
+    <div id="GameDiv">
+        <canvas id="GameCanvas" width="1334" height="750" tabindex="99"></canvas>
+    </div>
+    <script src="src/polyfills.bundle.js" charset="utf-8"> </script>    
+    <!-- SystemJS support. -->
+    <script src="src/system.bundle.js" charset="utf-8"> </script>
+    <!-- Import map -->
+    <script src="src/import-map.json" type="systemjs-importmap" charset="utf-8"> </script>
+    <script>
+        function getUrlParam(key) {
+            const searchParams = new URLSearchParams(window.location.search);
+            return searchParams.get(key);
+        }
+        window["LANG"] = getUrlParam('lang') == null ? (window["navigator"]["language"] == "zh-CN" ? "ZH" : "EN") :(getUrlParam('lang') == "EN" ? "EN" : "ZH");
+        const gameId = getUrlParam('id') || "Prank-Call-Tung-Tung-Sahur";
+        console.time = console.timeEnd = console.group = function(){};
+        resolution.init(1334, 750);
+        YYGGames.logger.setConsoleEnable(false);
+        YYGGames.setAdEnable(true);
+        YYGGames.showLoadingSourceScene().setAppName(gameId).setBackgroundColor('#5b85da').setGameLogoUrl(`./@base/logo-${window["LANG"]}.png`).setGameBannerUrl('./@base/banner.jpg');
+        System.import('./index.js').catch(function(err) { console.error(err); })
+    </script>
+  </body>
+</html>

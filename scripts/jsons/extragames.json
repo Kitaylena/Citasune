@@ -142,5 +142,47 @@
   "special": [
    "port"
   ]
- }
+ },
+ {
+ "id": 1016,
+"name": "Angry Birds 2",
+ "cover": "/assets/gameicons/1016.png",
+"url": "/games/angrybirds2.html",
+"author": "Rovio Entertainment",
+"authorLink": "https://www.rovio.com",
+ "special": [
+ "port"
+ ]
+  },
+  {
+ "id": 1017,
+"name": "Wolfenstein 3D",
+ "cover": "/assets/gameicons/1017.png",
+"url": "/games/wolfenstein3d.html",
+"author": "Raven Software",
+"authorLink": "https://www.ravensoftware.com",
+ "special": [
+ "port"
+ ]
+  },
+  {
+ "id": 1018,
+"name": "Prank Call Tung Tung Sahur Clicker",
+ "cover": "/assets/gameicons/1018.png",
+"url": "/games/prankcallr.html",
+"author": "unknown",
+"authorLink": "",
+ "special": [
+ ]
+  },
+  {
+ "id": 1019,
+"name": "Stickman GTA City",
+ "cover": "/assets/gameicons/1019.png",
+"url": "/games/stickmangtacity.html",
+"author": "unknown",
+"authorLink": "",
+ "special": [
+ ]
+  }
 ]

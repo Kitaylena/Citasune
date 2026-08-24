@@ -98,7 +98,11 @@ function makeCard(file) {
   img.alt = file.name;
   img.loading = "lazy";
   card.appendChild(img);
-
+  img.onerror = function() {
+    this.onerror = null; 
+    this.src = "./assets/imageassets/placeholder.jpg";
+    this.className += "placeholder";
+  };
   const title = document.createElement("h3");
   title.textContent = file.name;
   card.appendChild(title);
