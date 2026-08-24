@@ -1,4 +1,4 @@
-# NOTE THIS IS UNFINISHED! WILL BE FINISHED AT SOON.
+
 <table>
   <tr>
     <td align="center" width="180">
@@ -16,12 +16,27 @@
 # INFO
 
 * This project was made by Kitaylena, this was a attempt at a remake of a older UBG site attempt and recode of the whole thing including new features.
-* Any web-ports will be credited with a soon info button whenever you hover over a game.
+* Any web-ports will be credited under the title of the game at the top right when you select one.
 * This repo contains all web-ports along with credits. https://github.com/gays-studio/web-port-list
 
 ## Roadmap
 
-* TBD/Unfinished
+### August-September
+
+* Add Proxy (hopefully)
+* Add more games, make this more public and promote this site.
+* Add Apps
+
+### October-December
+* TBD
+
 
 ## To-Do List
 
+* Add Proxy (hopefully)
+* Add Apps
+* After adding these features, promote the UBG/Proxy site.
+
+---
+
+* love by kitaylena ❤
