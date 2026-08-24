@@ -168,13 +168,19 @@ if (islocal) {
 
 // helper functions
 
+function siteURL(p) {
+  p = String(p);
+  if (/^https?:/i.test(p)) return p;
+  return new URL(p.replace(/^\.?\//, ""), document.baseURI).href;
+}
+
 function goto(url) {
   if (url == "./proxy.html") {
     alert("Proxy is disabled for the time being..");
     return;
   }
-  window.location.href = url;
-} 
+  window.location.href = siteURL(url);
+}
 
 function createpopup(htmlcontent) {
   if (document.getElementById("popupOverlay")) return;
@@ -361,7 +367,7 @@ function setFavicon(href) {
     link.rel = "icon";
     document.head.appendChild(link);
   }
-  link.href = href || "/assets/imageassets/CitasuneIcon.png";
+  link.href = href || siteURL("assets/imageassets/CitasuneIcon.png");
 }
 
 function applyCloak() {

@@ -9,6 +9,16 @@ function zoneURL(u) {
   return (u + "").replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
 }
 
+function siteURL(p) {
+  p = String(p);
+  if (/^https?:/i.test(p)) return p;
+  return new URL(p.replace(/^\.?\//, ""), document.baseURI).href;
+}
+
+function backToGames() {
+  window.location.href = siteURL("pages/g.html");
+}
+
 const firebaseConfig = {
   apiKey: "AIzaSyBHmkPkVZ6S06XC2lpYE7ZYhIp2FJW54FA",
   authDomain: "idka-f7ad4.firebaseapp.com",
@@ -170,7 +180,7 @@ function loadZone(file) {
   }
 
   showLoading();
-  const url = zoneURL(file.url);
+  const url = siteURL(zoneURL(file.url));
   fetch(url + "?t=" + Date.now())
     .then((response) => response.text())
     .then((html) => {
@@ -227,7 +237,7 @@ async function initDisplay() {
     const response = await fetch(zonesURL + "?t=" + Date.now());
     let zones = await response.json();
     try {
-      const extraRes = await fetch(extraZonesURL + "?t=" + Date.now());
+      const extraRes = await fetch(siteURL(extraZonesURL) + "?t=" + Date.now());
       zones = zones.concat(await extraRes.json());
     } catch (e) {
       console.error("failed to load extra games", e);

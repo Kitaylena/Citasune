@@ -49,6 +49,12 @@ function zoneURL(u) {
   return (u + "").replace("{COVER_URL}", coverURL).replace("{HTML_URL}", htmlURL);
 }
 
+function siteURL(p) {
+  p = String(p);
+  if (/^https?:/i.test(p)) return p;
+  return new URL(p.replace(/^\.?\//, ""), document.baseURI).href;
+}
+
 async function listZones() {
   if (!gamesContainer) return;
   try {
@@ -56,7 +62,7 @@ async function listZones() {
     const json = await response.json();
     let extra = [];
     try {
-      const extraRes = await fetch(extraZonesURL + "?t=" + Date.now());
+      const extraRes = await fetch(siteURL(extraZonesURL) + "?t=" + Date.now());
       extra = await extraRes.json();
     } catch (e) {
       console.error("failed to load extra games", e);
@@ -78,7 +84,7 @@ function openZone(file) {
     recordPlay(file.id);
     window.open(file.url, "_blank");
   } else {
-    window.location.href = "/pages/display.html?g=" + file.id;
+    window.location.href = siteURL("pages/display.html?g=" + file.id);
   }
 }
 
@@ -88,7 +94,7 @@ function makeCard(file) {
   card.onclick = () => openZone(file);
 
   const img = document.createElement("img");
-  img.src = zoneURL(file.cover);
+  img.src = siteURL(zoneURL(file.cover));
   img.alt = file.name;
   img.loading = "lazy";
   card.appendChild(img);

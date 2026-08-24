@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>(function(){var r=location.href.split("#")[0].split("?")[0].replace(/[^/]*$/,"");if(/\/pages\/$/.test(r))r=r.slice(0,-6);document.write('<base href="'+r+'">');})();</script>
   <title>Citasune</title>
-  <link rel="icon" type="image/png" href="/assets/imageassets/CitasuneIcon.png">
-  <link rel="stylesheet" href="/style/style.css">
+  <link rel="icon" type="image/png" href="assets/imageassets/CitasuneIcon.png">
+  <link rel="stylesheet" href="style/style.css">
   <meta name="description" content="Citasune — 800+ unbl*cked apps, no ads, fully customizable. made by kitaylena ❤">
   <meta name="keywords" content="citasune, unbl*cked apps, unbl*cked, apps, proxy, school apps, no ads">
   <meta name="author" content="Kitaylena">
@@ -33,7 +34,7 @@
     
     <div class="topbarsection left">
       <button class="topbarbutton" aria-label="Home" onclick="goto('/index.html')">
-        <img src="/assets/imageassets/CitasuneIcon.png" alt="Citasune Icon">
+        <img src="assets/imageassets/CitasuneIcon.png" alt="Citasune Icon">
       </button>
       <div class="topbardivider"></div>
       <div id="zonemeta">
@@ -47,19 +48,19 @@
     <div class="topbarsection right">
       <div class="topbardivider"></div>
       <button class="topbarbutton" id="gamepadbutton" aria-label="Games" onclick="goto('/pages/g.html')">
-        <img src="/assets/imageassets/game.png" alt="Gamepad Icon">
+        <img src="assets/imageassets/game.png" alt="Gamepad Icon">
       </button>
       <button class="topbarbutton" id="proxybutton" aria-label="Proxy" onclick="goto('/index.html')">
-        <img src="/assets/imageassets/proxy.png" alt="Internet Icon">
+        <img src="assets/imageassets/proxy.png" alt="Internet Icon">
       </button>
       <button class="topbarbutton" id="appsbutton" aria-label="Apps" onclick="apps()">
-        <img src="/assets/imageassets/appsicon.png" alt="Apps Icon">
+        <img src="assets/imageassets/appsicon.png" alt="Apps Icon">
       </button>
       <button class="topbarbutton" id="dcbutton" aria-label="Discord" onclick="discord()">
-        <img src="/assets/imageassets/discordicon.png" alt="Discord Icon">
+        <img src="assets/imageassets/discordicon.png" alt="Discord Icon">
       </button>
       <button class="topbarbutton" id="settingsbutton" aria-label="Settings" onclick="openSettings()">
-        <img src="/assets/imageassets/settings.png" alt="Settings Icon">
+        <img src="assets/imageassets/settings.png" alt="Settings Icon">
       </button>
     </div>
   </div>
@@ -70,10 +71,10 @@
 
   <div id="zonecontrols">
     <button class="buttonforzone iconbtn" onclick="fullscreenZone()" aria-label="Fullscreen" title="Fullscreen">
-      <img src="/assets/imageassets/fullscreen.png" alt="Fullscreen Icon">
+      <img src="assets/imageassets/fullscreen.png" alt="Fullscreen Icon">
     </button>
     <button class="buttonforzone iconbtn" onclick="refreshZone()" aria-label="Refresh" title="Refresh">
-      <img src="/assets/imageassets/refresh.png" alt="Refresh Icon">
+      <img src="assets/imageassets/refresh.png" alt="Refresh Icon">
     </button>
     <button class="buttonforzone" onclick="openInNewTab()">open in new tab</button>
     <button class="buttonforzone" onclick="goto('/pages/g.html')">close</button>
@@ -81,7 +82,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="/scripts/main/main.js"></script>
-  <script src="/scripts/main/display.js"></script>
+  <script src="scripts/main/main.js"></script>
+  <script src="scripts/main/display.js"></script>
 </body>
 </html>
