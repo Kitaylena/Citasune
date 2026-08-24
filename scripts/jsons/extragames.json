@@ -184,5 +184,15 @@
 "authorLink": "",
  "special": [
  ]
+  },
+  {
+ "id": 10000,
+"name": "Placeholder Test",
+ "cover": "/assets/imageassets/placeholder.jpg",
+"url": "/games/placeholdertest.html",
+"author": "Citasune, THIS IS MAINLY TO SEE IF EXTRAGAMES.JSON WORKS.",
+"authorLink": "",
+ "special": [
+ ]
   }
 ]
