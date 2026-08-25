@@ -186,6 +186,17 @@
  ]
   },
   {
+ "id": 1020,
+"name": "Touhou 6: The Embodiment of Scarlet Devil",
+ "cover": "/assets/gameicons/1020.png",
+"url": "/games/touhou6.html",
+"author": "Team Shanghai Alice",
+"authorLink": "https://www16.big.or.jp/~zun/top.html",
+ "special": [
+    "port"
+ ]
+  },
+  {
  "id": 10000,
 "name": "Placeholder Test",
  "cover": "/assets/imageassets/placeholder.jpg",

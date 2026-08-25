@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="https://cdn.jsdelivr.net/gh/Kitaylena/web-ports@main/touhou6/">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>TH06 Web</title>
+  <style>
+    :root {
+      color-scheme: light;
+      background: #d8d0bd;
+      color: #231815;
+      font-family: "MS Mincho", "Yu Mincho", "Hiragino Mincho ProN", serif;
+      --paper: #f5f0e6;
+      --line: #7f7463;
+      --ink: #231815;
+      --muted: #6d6256;
+      --red: #8f1d20;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+    }
+
+    canvas {
+      position: fixed !important;
+      inset: 0 !important;
+      width: min(100vw, 133.333333vh) !important;
+      height: min(100vh, 75vw) !important;
+      margin: auto !important;
+      display: block !important;
+      image-rendering: pixelated;
+      background: #000;
+      outline: 0;
+    }
+
+    #overlay {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #d8d0bd;
+      transition: opacity 120ms linear;
+    }
+
+    #overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #background {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-color: #000;
+      pointer-events: none;
+    }
+
+    #backgroundFrame {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      z-index: 0;
+      height: 82vmin;
+      max-width: 92vw;
+      max-height: 92vh;
+      aspect-ratio: 1 / 1;
+      transform: translate(-50%, -50%);
+      background-repeat: no-repeat;
+      opacity: 0;
+      transition: opacity 600ms ease-in-out;
+      pointer-events: none;
+      border: 3px solid var(--paper);
+      outline: 1px solid var(--line);
+      outline-offset: 3px;
+      box-shadow: 0 0 24px rgba(0, 0, 0, .8);
+    }
+
+    #flash {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      background: #fff;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #flash.flashing {
+      animation: flash 720ms ease-out;
+    }
+
+    @keyframes flash {
+      0% { opacity: 0; }
+      12% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    #panel {
+      position: relative;
+      z-index: 1;
+      width: min(680px, calc(100vw - 48px));
+      box-sizing: border-box;
+      padding: 8px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    #logo {
+      width: min(380px, 82%);
+      height: auto;
+      image-rendering: auto;
+    }
+
+    #progress {
+      width: 100%;
+      height: 34px;
+      box-sizing: border-box;
+      border: 1px solid var(--line);
+      background: #e2d9c6;
+      overflow: hidden;
+    }
+
+    #progressFill {
+      width: 0%;
+      height: 100%;
+      background-color: var(--red);
+      background-image: url("loadingbarfill.png");
+      background-repeat: repeat-x;
+      background-position: left center;
+      background-size: auto 100%;
+      transition: width 160ms linear;
+    }
+
+    h1 {
+      margin: 0;
+      align-self: center;
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 1.25;
+      letter-spacing: .12em;
+      color: var(--ink);
+    }
+
+    #subtitle {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font: 11px/1.2 "Times New Roman", serif;
+      letter-spacing: .08em;
+    }
+
+    p {
+      margin: 0 auto;
+      align-self: center;
+      min-height: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 13px;
+    }
+
+    #prompt {
+      color: #fff;
+      font-size: 16px;
+      letter-spacing: .08em;
+      text-shadow:
+        0 0 4px rgba(0, 0, 0, .9),
+        0 1px 2px rgba(0, 0, 0, .9),
+        1px 0 2px rgba(0, 0, 0, .9),
+        -1px 0 2px rgba(0, 0, 0, .9),
+        0 -1px 2px rgba(0, 0, 0, .9);
+    }
+
+    #actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-self: center;
+    }
+
+    button, label {
+      min-width: 118px;
+      box-sizing: border-box;
+      border: 1px solid var(--line);
+      border-radius: 0;
+      padding: 8px 12px;
+      background: #eee7d8;
+      color: var(--ink);
+      font-family: "MS Gothic", Osaka-Mono, monospace;
+      font-weight: 400;
+      font-size: 12px;
+      letter-spacing: 0;
+      cursor: pointer;
+    }
+
+    button:not(:disabled):hover, label:hover {
+      background: #fffaf0;
+      color: var(--red);
+    }
+
+    button:disabled {
+      opacity: .42;
+      cursor: not-allowed;
+    }
+
+    input {
+      display: none;
+    }
+
+    #status {
+      width: 100%;
+      height: 150px;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      border: 1px solid #b8ad99;
+      background: #e9e2d4;
+      overflow: auto;
+      white-space: pre-wrap;
+      text-align: left;
+      color: #554a40;
+      font: 13px/1.5 "MS Gothic", "Courier New", monospace;
+      scrollbar-width: thin;
+    }
+
+    body.dragging #overlay {
+      background: #cec3ad;
+    }
+
+    @media (max-height: 560px) {
+      #panel {
+        gap: 12px;
+      }
+
+      #logo {
+        width: min(240px, 60%);
+      }
+
+      #progress {
+        height: 26px;
+      }
+
+      #status {
+        height: 96px;
+      }
+    }
+
+    #actions.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="640" height="480" tabindex="-1" oncontextmenu="event.preventDefault()"></canvas>
+
+  <div id="overlay">
+    <div id="background"></div>
+    <div id="backgroundFrame"></div>
+    <section id="panel" aria-live="polite">
+      <img id="logo" src="logo.png" alt="Touhou Koumakyou">
+      <p id="prompt">Select folder or drag the game folder here.</p>
+      <div id="progress">
+        <div id="progressFill"></div>
+      </div>
+      <div id="actions" class="hidden">
+        <label>Select Folder <input id="folderInput" type="file" directory multiple webkitdirectory></label>
+        <button id="startButton" disabled>Start</button>
+      </div>
+      <div id="status">Waiting for WASM runtime...</div>
+    </section>
+  </div>
+  <div id="flash"></div>
+
+  <script>
+    const overlay = document.getElementById("overlay");
+    const statusEl = document.getElementById("status");
+    const startButton = document.getElementById("startButton");
+    const folderInput = document.getElementById("folderInput");
+    const promptEl = document.getElementById("prompt");
+    const progressFill = document.getElementById("progressFill");
+    const backgroundEl = document.getElementById("background");
+    const backgroundFrameEl = document.getElementById("backgroundFrame");
+    const flashEl = document.getElementById("flash");
+    const EXPECTED_TOTAL_BYTES = 330 * 1024 * 1024;
+    const SPRITE_URL = "touhouloadingbackground.png";
+    const SPRITE_COLUMNS = 3;
+    const SPRITE_ROWS = 4;
+    const SPRITE_CELL_X = [9, 526, 1042];
+    const SPRITE_CELL_Y = [10, 526, 1041, 1557];
+    const SPRITE_CELL_SIZE = 512;
+    const SPRITE_CELL_INSET_PX = 3;
+    const SPRITE_INTERVAL_MS = 5000;
+    const SPRITE_FADE_MS = 600;
+
+    function setProgress(fraction) {
+      const clamped = Math.max(0, Math.min(1, fraction));
+      progressFill.style.width = `${(clamped * 100).toFixed(1)}%`;
+    }
+
+    let spriteWidth = 0;
+    let spriteHeight = 0;
+    let spriteCol = 0;
+    let spriteRow = 0;
+    let spriteTimer = null;
+
+    function applySpriteFrame(col, row) {
+      if (!spriteWidth) return;
+      const frameW = backgroundFrameEl.clientWidth;
+      const frameH = backgroundFrameEl.clientHeight;
+      if (!frameW || !frameH) return;
+      const visible = SPRITE_CELL_SIZE - 2 * SPRITE_CELL_INSET_PX;
+      const scale = Math.max(frameW / visible, frameH / visible);
+      const centerX = (SPRITE_CELL_X[col] + SPRITE_CELL_SIZE / 2) * scale;
+      const centerY = (SPRITE_CELL_Y[row] + SPRITE_CELL_SIZE / 2) * scale;
+      backgroundFrameEl.style.backgroundSize = `${spriteWidth * scale}px ${spriteHeight * scale}px`;
+      backgroundFrameEl.style.backgroundPosition = `${frameW / 2 - centerX}px ${frameH / 2 - centerY}px`;
+    }
+
+    function showRandomSpriteFrame() {
+      const total = SPRITE_COLUMNS * SPRITE_ROWS;
+      const index = Math.floor(Math.random() * total);
+      spriteCol = index % SPRITE_COLUMNS;
+      spriteRow = Math.floor(index / SPRITE_COLUMNS);
+      applySpriteFrame(spriteCol, spriteRow);
+    }
+
+    function cycleSpriteFrame() {
+      if (bootQueued) return;
+      backgroundFrameEl.style.opacity = "0";
+      setTimeout(() => {
+        if (bootQueued) return;
+        showRandomSpriteFrame();
+        backgroundFrameEl.style.opacity = "1";
+      }, SPRITE_FADE_MS);
+    }
+
+    function startBackgroundCycle() {
+      if (spriteTimer) return;
+      const image = new Image();
+      image.onload = () => {
+        spriteWidth = image.naturalWidth;
+        spriteHeight = image.naturalHeight;
+        backgroundFrameEl.style.backgroundImage = `url("${SPRITE_URL}")`;
+        backgroundFrameEl.style.aspectRatio = "1 / 1";
+        showRandomSpriteFrame();
+        backgroundFrameEl.style.opacity = "1";
+        spriteTimer = setInterval(cycleSpriteFrame, SPRITE_INTERVAL_MS);
+      };
+      image.onerror = () => {
+        appendStatus(`Background not found (${SPRITE_URL}).`);
+      };
+      image.src = SPRITE_URL;
+    }
+
+    function stopBackgroundCycle() {
+      if (spriteTimer) {
+        clearInterval(spriteTimer);
+        spriteTimer = null;
+      }
+    }
+
+    let runtimeReady = false;
+    let fontReady = false;
+    let filesReady = false;
+    let gameStarted = false;
+    let bootQueued = false;
+    let statusLines = [];
+
+    function appendStatus(line) {
+      if (!line) return;
+      statusLines.push(String(line));
+      if (statusLines.length > 12) {
+        statusLines = statusLines.slice(statusLines.length - 12);
+      }
+      statusEl.textContent = statusLines.join("\n");
+      statusEl.scrollTop = statusEl.scrollHeight;
+    }
+
+    function setStatus(line) {
+      appendStatus(line);
+    }
+
+    function fitCanvas() {
+      if (!Module || !Module.canvas) return;
+      const scale = Math.min(window.innerWidth / 640, window.innerHeight / 480);
+      Module.canvas.style.setProperty("position", "fixed", "important");
+      Module.canvas.style.setProperty("inset", "0", "important");
+      Module.canvas.style.setProperty("width", `${Math.floor(640 * scale)}px`, "important");
+      Module.canvas.style.setProperty("height", `${Math.floor(480 * scale)}px`, "important");
+      Module.canvas.style.setProperty("margin", "auto", "important");
+    }
+
+    function keepCanvasFitted() {
+      fitCanvas();
+      requestAnimationFrame(fitCanvas);
+      setTimeout(fitCanvas, 100);
+      setTimeout(fitCanvas, 500);
+    }
+
+    function resumeAudio() {
+      const audioContext = Module.SDL2 && Module.SDL2.audioContext;
+      if (audioContext && audioContext.state === "suspended") {
+        audioContext.resume().catch(() => {});
+      }
+    }
+
+    async function loadPublicFont() {
+      appendStatus("Loading font...");
+      const response = await fetch("NotoSansJP-Regular.ttf", { cache: "force-cache" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      Module.FS.writeFile("/NotoSansJP-Regular.ttf", bytes);
+      fontReady = true;
+      appendStatus("Font ready.");
+      updateStartButton();
+    }
+
+    function updateStartButton() {
+      startButton.disabled = !(runtimeReady && fontReady && filesReady) || gameStarted;
+      if (runtimeReady && fontReady && filesReady && !gameStarted && !bootQueued) {
+        beginBootSequence();
+      }
+    }
+
+    function beginBootSequence() {
+      if (bootQueued) return;
+      bootQueued = true;
+      stopBackgroundCycle();
+      setProgress(1);
+      appendStatus("Loading complete.");
+      flashEl.classList.remove("flashing");
+      void flashEl.offsetWidth;
+      flashEl.classList.add("flashing");
+      overlay.classList.add("hidden");
+      setTimeout(startGame, 2000);
+    }
+
+    function normalizePath(path) {
+      return path
+        .replaceAll("\\", "/")
+        .replace(/^\/+/, "")
+        .split("/")
+        .filter(Boolean)
+        .join("/");
+    }
+
+    function mkdirFor(path) {
+      const parts = path.split("/");
+      parts.pop();
+      if (parts.length > 0) {
+        Module.FS.mkdirTree(parts.join("/"));
+      }
+    }
+
+    function canonicalGamePath(path) {
+      const normalized = normalizePath(path);
+      const parts = normalized.split("/");
+      if (parts.length <= 1) return normalized;
+      const first = parts[0].toLowerCase();
+      if (first === "data" || first === "bgm" || first === "replay") {
+        return normalized;
+      }
+      return parts.slice(1).join("/");
+    }
+
+    function aliasesFor(path) {
+      const aliases = new Set();
+      const parts = path.split("/");
+      const upperName = parts[parts.length - 1].toUpperCase();
+      const lowerPath = path.toLowerCase();
+
+      if (lowerPath !== path && (lowerPath.startsWith("data/") || lowerPath.startsWith("bgm/"))) {
+        aliases.add(lowerPath);
+      }
+
+      const datAliases = [
+        [/^(?:KOUMAKYO_)?IN\.DAT$/, "紅魔郷IN.DAT"],
+        [/^(?:KOUMAKYO_)?MD\.DAT$/, "紅魔郷MD.DAT"],
+        [/^(?:KOUMAKYO_)?ST\.DAT$/, "紅魔郷ST.DAT"],
+        [/^(?:KOUMAKYO_)?CM\.DAT$/, "紅魔郷CM.DAT"],
+        [/^(?:KOUMAKYO_)?ED\.DAT$/, "紅魔郷ED.DAT"],
+        [/^(?:KOUMAKYO_)?TL\.DAT$/, "紅魔郷TL.DAT"],
+        [/^TH06\.CFG$/, "東方紅魔郷.cfg"],
+        [/^MSGOTHIC\.TTC$/, "msgothic.ttc"],
+      ];
+      for (const [pattern, alias] of datAliases) {
+        if (pattern.test(upperName)) {
+          aliases.add(alias);
+        }
+      }
+      return aliases;
+    }
+
+    function writeFileOnce(path, data, written) {
+      if (!path || written.has(path)) return;
+      mkdirFor(path);
+      Module.FS.writeFile(path, data);
+      written.add(path);
+    }
+
+    function writeVirtualFile(path, data) {
+      const canonical = canonicalGamePath(path);
+      const written = new Set();
+      writeFileOnce(canonical, data, written);
+      for (const alias of aliasesFor(canonical)) {
+        writeFileOnce(alias, data, written);
+      }
+    }
+
+    function parseTar(bytes) {
+      const files = [];
+      const decoder = new TextDecoder();
+      let offset = 0;
+      while (offset + 512 <= bytes.length) {
+        const header = bytes.subarray(offset, offset + 512);
+        if (header.every((byte) => byte === 0)) break;
+
+        const name = decoder.decode(header.subarray(0, 100)).replace(/\0.*$/, "");
+        const prefix = decoder.decode(header.subarray(345, 500)).replace(/\0.*$/, "");
+        const size = parseInt(decoder.decode(header.subarray(124, 136)).replace(/\0.*$/, "").trim(), 8) || 0;
+        const typeFlag = String.fromCharCode(header[156]);
+        const fullName = prefix ? `${prefix}/${name}` : name;
+
+        offset += 512;
+        const isRegularFile = typeFlag === "0" || typeFlag === "\0" || typeFlag === "";
+        if (isRegularFile && fullName) {
+          files.push({ name: fullName, data: bytes.subarray(offset, offset + size) });
+        }
+        offset += 512 * Math.ceil(size / 512);
+      }
+      return files;
+    }
+
+    function nextTick() {
+      return new Promise((resolve) => {
+        const channel = new MessageChannel();
+        channel.port1.onmessage = () => {
+          channel.port1.close();
+          resolve();
+        };
+        channel.port2.postMessage(0);
+      });
+    }
+
+    async function fetchPart(url) {
+      for (let attempt = 1; ; attempt += 1) {
+        try {
+          const response = await fetch(url, { cache: "force-cache" });
+          if (response.status === 404) return null;
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return response;
+        } catch (error) {
+          if (attempt >= 3) throw new Error(`${url}: ${error.message}`);
+          appendStatus(`Retrying ${url} (attempt ${attempt + 1}/3)...`);
+          await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+        }
+      }
+    }
+
+    async function autoLoadGameData() {
+      try {
+        promptEl.textContent = "Downloading game data...";
+        startBackgroundCycle();
+        let chunks = [];
+        let partIndex = 0;
+        let totalBytes = 0;
+        let lastReported = 0;
+
+        for (;;) {
+          const partName = `th06.tar.part${String(partIndex).padStart(2, "0")}`;
+          const response = await fetchPart(partName);
+          if (!response) {
+            if (partIndex === 0) throw new Error("no th06.tar.part files found");
+            break;
+          }
+
+          if (response.body && response.body.getReader) {
+            const reader = response.body.getReader();
+            for (;;) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              chunks.push(value);
+              totalBytes += value.length;
+              setProgress((totalBytes / EXPECTED_TOTAL_BYTES) * 0.92);
+              if (totalBytes - lastReported >= 4 * 1024 * 1024) {
+                lastReported = totalBytes;
+                appendStatus(`Downloading... ${(totalBytes / 1048576).toFixed(1)} MB`);
+                await nextTick();
+              }
+            }
+          } else {
+            const bytes = new Uint8Array(await response.arrayBuffer());
+            chunks.push(bytes);
+            totalBytes += bytes.length;
+          }
+
+          appendStatus(`Part ${String(partIndex).padStart(2, "0")} done (${(totalBytes / 1048576).toFixed(1)} MB total).`);
+          partIndex += 1;
+          await nextTick();
+        }
+
+        const combined = new Uint8Array(totalBytes);
+        let writeOffset = 0;
+        for (const chunk of chunks) {
+          combined.set(chunk, writeOffset);
+          writeOffset += chunk.length;
+        }
+        chunks = null;
+
+        appendStatus("Extracting archive...");
+        await nextTick();
+
+        const files = parseTar(combined);
+        let extracted = 0;
+        for (const file of files) {
+          writeVirtualFile(file.name, file.data);
+          extracted += 1;
+          setProgress(0.92 + (extracted / files.length) * 0.08);
+          if (extracted % 5 === 0) {
+            appendStatus(`Extracted ${extracted}/${files.length} files...`);
+          }
+          await nextTick();
+        }
+
+        setProgress(1);
+        filesReady = extracted > 0;
+        promptEl.textContent = filesReady
+          ? "Game data loaded."
+          : "Select folder or drag the game folder here.";
+        appendStatus(filesReady ? `Extracted ${extracted} files. Ready.` : "Archive was empty.");
+        updateStartButton();
+      } catch (error) {
+        appendStatus(`Auto-load failed: ${error.message}`);
+        promptEl.textContent = "Select folder or drag the game folder here.";
+      }
+    }
+
+    async function writeBrowserFiles(files) {
+      let count = 0;
+      filesReady = false;
+      updateStartButton();
+      promptEl.textContent = "Loading files...";
+      appendStatus(`Loading ${files.length} browser files...`);
+
+      for (const file of files) {
+        writeVirtualFile(
+          file.webkitRelativePath || file.relativePath || file.name,
+          new Uint8Array(await file.arrayBuffer())
+        );
+        count += 1;
+        if (count % 20 === 0) {
+          appendStatus(`Loaded ${count} files...`);
+          await new Promise(requestAnimationFrame);
+        }
+      }
+
+      filesReady = count > 0;
+      promptEl.textContent = filesReady
+        ? "Folder loaded. Start when ready."
+        : "Select folder or drag the game folder here.";
+      appendStatus(filesReady ? `Loaded ${count} files. Ready.` : "No files loaded.");
+      updateStartButton();
+    }
+
+    async function readEntry(entry, basePath = "") {
+      if (entry.isFile) {
+        return await new Promise((resolve, reject) => {
+          entry.file((file) => {
+            file.relativePath = normalizePath(`${basePath}/${file.name}`);
+            resolve([file]);
+          }, reject);
+        });
+      }
+      if (!entry.isDirectory) return [];
+
+      const reader = entry.createReader();
+      const entries = [];
+      for (;;) {
+        const batch = await new Promise((resolve, reject) => reader.readEntries(resolve, reject));
+        if (batch.length === 0) break;
+        entries.push(...batch);
+      }
+
+      const files = [];
+      for (const child of entries) {
+        files.push(...await readEntry(child, normalizePath(`${basePath}/${entry.name}`)));
+      }
+      return files;
+    }
+
+    folderInput.addEventListener("change", async (event) => {
+      await writeBrowserFiles([...event.target.files]);
+    });
+
+    window.addEventListener("dragenter", (event) => {
+      event.preventDefault();
+      document.body.classList.add("dragging");
+    });
+
+    window.addEventListener("dragover", (event) => {
+      event.preventDefault();
+    });
+
+    window.addEventListener("dragleave", (event) => {
+      if (event.relatedTarget === null) {
+        document.body.classList.remove("dragging");
+      }
+    });
+
+    window.addEventListener("drop", async (event) => {
+      event.preventDefault();
+      document.body.classList.remove("dragging");
+      const entries = [...event.dataTransfer.items]
+        .map((item) => item.webkitGetAsEntry && item.webkitGetAsEntry())
+        .filter(Boolean);
+      const files = [];
+      for (const entry of entries) {
+        files.push(...await readEntry(entry));
+      }
+      await writeBrowserFiles(files);
+    });
+
+    window.addEventListener("resize", fitCanvas);
+    window.addEventListener("resize", () => applySpriteFrame(spriteCol, spriteRow));
+    window.addEventListener("fullscreenchange", keepCanvasFitted);
+    window.addEventListener("pointerdown", resumeAudio);
+
+    function startGame() {
+      if (gameStarted) return;
+      gameStarted = true;
+      updateStartButton();
+      appendStatus("Starting...");
+      overlay.classList.add("hidden");
+      Module.canvas.focus();
+      resumeAudio();
+      Module.callMain([]);
+      resumeAudio();
+      keepCanvasFitted();
+    }
+
+    startButton.addEventListener("click", startGame);
+
+    var Module = {
+      noInitialRun: true,
+      canvas: document.getElementById("canvas"),
+      print: (text) => appendStatus(String(text)),
+      printErr: (text) => console.error(text),
+      setStatus: setStatus,
+      onRuntimeInitialized() {
+        runtimeReady = true;
+        fitCanvas();
+        appendStatus("Runtime ready.");
+        updateStartButton();
+        loadPublicFont().catch((error) => {
+          appendStatus(`Font failed: ${error.message}`);
+          updateStartButton();
+        });
+        autoLoadGameData();
+      },
+    };
+  </script>
+  <script async src="index.js"></script>
+</body>
+</html>
