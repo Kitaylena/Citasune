@@ -28,6 +28,13 @@ const list = [
   "kay",
   "Hey, it's me, it's verity!",
   "im tired as of right now typing this",
+  "shoutout to mullvad vpn",
+  "sup guys here's my friends debit card info 4097 5801 1034 2265 expiry 05/30 cvv 553",
+  "did we turn the frogs gay or were the frogs gay from the start",
+  "gold gold gold",
+  "join the discord for more links",
+  "tmodloader shoutout",
+  "half skidded"
 ];
 
 if (randomtext) {
