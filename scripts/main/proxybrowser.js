@@ -17,10 +17,17 @@
     }
   }
 
-  var DEFAULT_WISP = "wss://fern.best/wisp/";
-  var WISP = DEFAULT_WISP;
-  try { WISP = localStorage.getItem("gnWisp") || DEFAULT_WISP; } catch (e) {}
   var TRANSPORT = "/libcurl/index.js";
+  var PRIMARY_WISP = "wss://us-east.wisp.q13x.com";
+  var WISP_FALLBACKS = [
+    "wss://us-east.wisp.q13x.com",
+    "wss://glseries.net/wisp/",
+    "wss://wisp.rhw.one/wisp/",
+    "wss://anura.pro/",
+    "wss://fern.best/wisp/",
+    "wss://eu-central.wisp.q13x.com/",
+  ];
+  var WISP = PRIMARY_WISP;
   var NEWTAB = "/pages/newtab.html";
   var DEFAULT_SEARCH = "https://duckduckgo.com/?q=%s";
 
@@ -36,6 +43,42 @@
   scramjet.init();
 
   var conn = new BareMux.BareMuxConnection("/baremux/worker.js");
+
+  // set a wisp server, then probe it with a quick request; false if it can't connect
+  async function testWisp(url) {
+    try { await conn.setTransport(TRANSPORT, [{ websocket: url }]); }
+    catch (e) { return false; }
+    try {
+      var client = new BareMux.BareClient();
+      var ctrl = new AbortController();
+      var to = setTimeout(function () { ctrl.abort(); }, 5000);
+      try {
+        await client.fetch("https://example.com/", { method: "HEAD", redirect: "manual", signal: ctrl.signal });
+        return true;
+      } finally { clearTimeout(to); }
+    } catch (e) { return false; }
+  }
+
+  // try the saved/cached server first, then fall through the list; first that
+  // actually connects wins, and is cached for the rest of the session.
+  async function pickTransport() {
+    var order = [];
+    try { var saved = localStorage.getItem("gnWisp"); if (saved) order.push(saved); } catch (e) {}
+    try { var cached = sessionStorage.getItem("gnWispActive"); if (cached) order.push(cached); } catch (e) {}
+    for (var i = 0; i < WISP_FALLBACKS.length; i++) order.push(WISP_FALLBACKS[i]);
+    var seen = {};
+    order = order.filter(function (u) { if (!u || seen[u]) return false; seen[u] = true; return true; });
+    for (var j = 0; j < order.length; j++) {
+      if (await testWisp(order[j])) {
+        WISP = order[j];
+        try { sessionStorage.setItem("gnWispActive", WISP); } catch (e) {}
+        return;
+      }
+    }
+    WISP = order[0] || PRIMARY_WISP;
+    try { await conn.setTransport(TRANSPORT, [{ websocket: WISP }]); } catch (e) {}
+  }
+
   var ready = (async function () {
     await navigator.serviceWorker.register("/sw.js");
     await navigator.serviceWorker.ready;
@@ -48,7 +91,7 @@
         setTimeout(fin, 2000);
       });
     }
-    await conn.setTransport(TRANSPORT, [{ websocket: WISP }]);
+    await pickTransport();
   })();
 
   function searchTemplate() {

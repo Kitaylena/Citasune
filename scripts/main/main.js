@@ -420,7 +420,7 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-const DEFAULT_WISP = "wss://fern.best/wisp/";
+const DEFAULT_WISP = "wss://us-east.wisp.q13x.com";
 
 function setWisp(url) {
   url = (url || "").trim() || DEFAULT_WISP;
@@ -525,7 +525,7 @@ function openSettings() {
     </div>
     <div class="settings-row">
       <label>wisp server</label>
-      <input type="text" class="settings-input" value="${curWisp}" onchange="setWisp(this.value)" placeholder="wss://fern.best/wisp/">
+      <input type="text" class="settings-input" value="${curWisp}" onchange="setWisp(this.value)" placeholder="wss://us-east.wisp.q13x.com">
     </div>
   `);
 }
