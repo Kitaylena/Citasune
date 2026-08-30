@@ -47,6 +47,44 @@
     return conn.setTransport(TRANSPORT, [{ websocket: url }]);
   }
 
+  // the transport isn't held here — it lives in the bare-mux SharedWorker, and
+  // the browser tears that down whenever it likes: it dies with its last port,
+  // and chrome reclaims it on its own besides. whatever replaces it starts empty,
+  // so the service worker's next request fails with "there are no bare clients"
+  // and keeps failing until someone sets a transport again. bare-mux broadcasts
+  // refreshPort from every worker startup for exactly this, but only its
+  // service-worker half listens, and all that half does is re-acquire a port. the
+  // page that owns the transport is the only thing that can put it back.
+  var bus = null;
+  try {
+    bus = new BroadcastChannel("bare-mux");
+    bus.onmessage = function (e) {
+      if (e.data && e.data.type === "refreshPort") wispLive();
+    };
+  } catch (e) {}
+
+  // a restart can also land mid-navigation, or on a worker we never heard start,
+  // so a navigation re-checks rather than trusting the setup it did once. asking
+  // costs one round trip and answers "is a transport there now" — a resolved
+  // setTransport() only ever answered "was one there once". overlapping callers
+  // share the check so a restart can't fan out into a transport per navigation.
+  var live = null;
+
+  function wispLive() {
+    if (live) return live;
+    live = (async function () {
+      try {
+        if (await conn.getTransport()) return;
+      } catch (e) {}
+      try {
+        await useWisp(wispUrl());
+      } catch (e) {}
+    })();
+    var clear = function () { live = null; };
+    live.then(clear, clear);
+    return live;
+  }
+
   var RELOAD_FLAG = "gnSwReload";
 
   function reloadTried() {
@@ -137,9 +175,10 @@
   // outright we run the navigation anyway, so the user sees the real error
   // instead of a page that silently ignores them.
   function whenReady(fn) {
-    if (isReady || failed) { fn(); return; }
+    var run = function () { wispLive().then(fn, fn); };
+    if (isReady || failed) { run(); return; }
     showStatus(true);
-    ready.then(fn, fn);
+    ready.then(run, run);
   }
 
   function searchTemplate() {
