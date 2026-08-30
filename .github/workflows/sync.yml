@@ -1,0 +1,42 @@
+name: 'sync forks w main'
+
+on:
+  schedule:
+    - cron: '*/7 * * * *'
+
+  workflow_dispatch:
+    inputs:
+      sync_test_mode:
+        description: 'Fork Sync Test Mode'
+        type: boolean
+        default: false
+
+jobs:
+  sync_latest_from_upstream:
+    runs-on: ubuntu-latest
+    name: Sync latest commits from upstream repo
+    if: github.repository != 'Kitaylena/Citasune'
+
+    steps:
+    - name: Checkout target repo
+      uses: actions/checkout@v3
+      with:
+        ref: main
+
+    - name: Sync upstream changes
+      id: sync
+      uses: aormsby/Fork-Sync-With-Upstream-action@v3.4.1
+      with:
+        target_sync_branch: main
+        target_repo_token: ${{ secrets.GITHUB_TOKEN }}
+        upstream_sync_branch: main
+        upstream_sync_repo: Kitaylena/Citasune
+        test_mode: ${{ inputs.sync_test_mode }}
+
+    - name: New commits found
+      if: steps.sync.outputs.has_new_commits == 'true'
+      run: echo "New commits were found to sync."
+
+    - name: No new commits
+      if: steps.sync.outputs.has_new_commits == 'false'
+      run: echo "There were no new commits."
