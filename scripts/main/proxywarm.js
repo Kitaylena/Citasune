@@ -14,6 +14,17 @@
     "wss://fern.best/wisp/",
     "wss://eu-central.wisp.q13x.com/",
     "wss://se-asia.wisp.q13x.com",
+	"wss://lichology.com",
+	"wss://nebulaproxy.io",
+	"wss://mages.io",
+	"wss://truf.the-nest.at",
+	"wss://motor-cycle-part.org",
+	"wss://invisiproxy.com",
+	"wss://thoughts.forwardersoft.com",
+	"wss://definitelyscience.com",
+	"wss://area.forwardersoft.com",
+	"wss://english.algebra.teacher.vocabulary.homework.forwardersoft.com",
+	"wss://wisp.terbiumon.top"
   ];
 
   // assets the proxy page needs, warmed into the http cache ahead of time.
