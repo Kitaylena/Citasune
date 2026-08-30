@@ -22,10 +22,6 @@
   <meta name="twitter:title" content="Citasune — 800+ unbl*cked apps!">
   <meta name="twitter:description" content="800+ unbl*cked apps, no ads, fully customizable. made by kitaylena ❤">
   <meta name="twitter:image" content="/assets/imageassets/CitasuneIcon.png">
-  <script src="https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.0.9/dist/index.js"></script>
-  <script src="uv/uv.bundle.js"></script>
-  <script src="uv/uv.config.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux/dist/index.js"></script>
 </head>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-89QQ4M67R7"></script>
 <script>
@@ -57,7 +53,7 @@
       <button class="topbarbutton" id="gamepadbutton" aria-label="Games" onclick="goto('./pages/g.html')">
         <img src="./assets/imageassets/game.png" alt="Gamepad Icon">
       </button>
-      <button class="topbarbutton" id="proxybutton" aria-label="Proxy" onclick="goto('./index.html')">
+      <button class="topbarbutton" id="proxybutton" aria-label="Proxy" onclick="goto('./pages/proxy.html')">
         <img src="./assets/imageassets/proxy.png" alt="Internet Icon">
       </button>
       <button class="topbarbutton" id="appsbutton" aria-label="Apps" onclick="apps()">
@@ -80,13 +76,13 @@
       </div>
       <p id="randomtext">Welcome to Citasune!</p>
 
-      <input type="text" id="inputbox" placeholder="Search the web.." />
+      <input type="text" id="inputbox" placeholder="search the web.." />
 
       <div id="rowofbuttons">
         <button class="rowbutton" id="gamepadbutton" aria-label="Games" onclick="goto('./pages/g.html')">
           <img src="./assets/imageassets/game.png" alt="Gamepad Icon">
         </button>
-        <button class="rowbutton" id="proxybutton" aria-label="Proxy" onclick="goto('./index.html')">
+        <button class="rowbutton" id="proxybutton" aria-label="Proxy" onclick="goto('./pages/proxy.html')">
           <img src="./assets/imageassets/proxy.png" alt="Internet Icon">
         </button>
         <button class="rowbutton" id="appsbutton" aria-label="Apps" onclick="apps()">
@@ -108,5 +104,6 @@
     </button>
   </div>
   <script src="./scripts/main/main.js"></script>
+  <script src="/scripts/main/proxy.js"></script>
 </body>
 </html>

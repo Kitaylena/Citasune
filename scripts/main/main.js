@@ -34,7 +34,8 @@ const list = [
   "gold gold gold",
   "join the discord for more links",
   "tmodloader shoutout",
-  "half skidded"
+  "half skidded",
+  "hey its me its misery"
 ];
 
 if (randomtext) {
@@ -75,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
     creditsbutton.addEventListener("click", () => {
       createpopup(`
         <h2 style="margin-bottom: 10px;">Credits</h2>
-        <p style="margin-bottom: 25px;">Citasune was created by <a href='https://github.com/Kitaylena'>Kitaylena</a> (with help from <a href="https://github.com/ajtabjs" target="_blank">aj</a>.</p>
+        <p style="margin-bottom: 25px;">Citasune was created by <a href='https://github.com/Kitaylena'>Kitaylena</a> (with help from <a href="https://github.com/ajtabjs" target="_blank">aj</a>.)</p>
         <p style="margin-bottom: 10px;">Any web port credits will be within next to the title when you play a game.</p>
         <p style="margin-bottom: 10px;">This repo contains all web-ports along with credits. <a href='https://github.com/gays-studio/web-port-list' target='_blank'>https://github.com/gays-studio/web-port-list</a></p>
       `);
@@ -147,18 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   requestAnimationFrame(animate);
 });
-// proxy
-const proxyinputtextbox = document.getElementById("inputbox");
-if (proxyinputtextbox) {
-  proxyinputtextbox.addEventListener("keydown", function(event) {
-      if (event.key === "Enter") {
-        createpopup(`
-          <h2 style="margin-bottom: 10px;">Proxy Disabled</h2>
-          <p style="margin-bottom: 15px;">this isn't finished yet as i haven't had the time to work on it, sorry! this feature will come eventually in the future.</p>
-        `);
-      }
-  });
-}
+// proxy — the search box is wired up in proxy.js (scramjet)
 
 
 // this is to check if its a file instead, will disable proxy however games will be active still
@@ -380,7 +370,7 @@ function applyCloak() {
   try {
     const name = localStorage.getItem("gnCloak");
     if (!name || name === "None") return;
-    const c = CLOAKS.find((x) => x.name === name);
+    const c = cloaks.find((x) => x.name === name);
     if (!c) return;
     if (c.title) document.title = c.title;
     setFavicon(c.icon);
@@ -389,7 +379,7 @@ function applyCloak() {
 
 function setCloak(name) {
   try { localStorage.setItem("gnCloak", name); } catch (e) {}
-  const c = CLOAKS.find((x) => x.name === name);
+  const c = cloaks.find((x) => x.name === name);
   if (!c || name === "None") {
     document.title = "Citasune";
     setFavicon("");
@@ -430,9 +420,32 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+const DEFAULT_WISP = "wss://fern.best/wisp/";
+
+function setWisp(url) {
+  url = (url || "").trim() || DEFAULT_WISP;
+  try { localStorage.setItem("gnWisp", url); } catch (e) {}
+  if (typeof window.__setWisp === "function") window.__setWisp(url);
+}
+
+const searchEngines = [
+  { name: "DuckDuckGo", url: "https://duckduckgo.com/?q=%s" },
+  { name: "Google", url: "https://www.google.com/search?q=%s" },
+  { name: "Bing", url: "https://www.bing.com/search?q=%s" },
+  { name: "Brave", url: "https://search.brave.com/search?q=%s" },
+  { name: "Startpage", url: "https://www.startpage.com/sp/search?query=%s" },
+  { name: "Yahoo", url: "https://search.yahoo.com/search?p=%s" },
+];
+const DEFAULT_SEARCH = searchEngines[0].url;
+
+function setSearchEngine(url) {
+  try { localStorage.setItem("gnSearch", url); } catch (e) {}
+}
+
 function openSettings() {
   let curAccent = defaultaccent, curFont = defaultfont, glassOn = true;
   let autoBlank = false, curCloak = "None", panicKey = "", panicUrl = "https://www.google.com";
+  let curWisp = DEFAULT_WISP, curSearch = DEFAULT_SEARCH;
   try {
     curAccent = localStorage.getItem("gnAccent") || defaultaccent;
     curFont = localStorage.getItem("gnFont") || defaultfont;
@@ -441,7 +454,13 @@ function openSettings() {
     curCloak = localStorage.getItem("gnCloak") || "None";
     panicKey = localStorage.getItem("gnPanicKey") || "";
     panicUrl = localStorage.getItem("gnPanicUrl") || panicUrl;
+    curWisp = localStorage.getItem("gnWisp") || curWisp;
+    curSearch = localStorage.getItem("gnSearch") || curSearch;
   } catch (e) {}
+
+  const searchOpts = searchEngines.map((s) =>
+    `<option value="${s.url}"${s.url === curSearch ? " selected" : ""}>${s.name}</option>`
+  ).join("");
 
   const swatches = themes.map((t) =>
     `<button class="theme-swatch${t.rgb === curAccent ? " active" : ""}" data-rgb="${t.rgb}" style="background: rgb(${t.rgb})" title="${t.name}" onclick="setTheme('${t.rgb}', '${t.bg}')"></button>`
@@ -497,6 +516,16 @@ function openSettings() {
     <div class="settings-row">
       <label>panic URL</label>
       <input type="text" class="settings-input" value="${panicUrl}" oninput="setPanicUrl(this.value)" placeholder="https://...">
+    </div>
+
+    <h3 style="margin:1.4rem 0 0.4rem;">proxy</h3>
+    <div class="settings-row">
+      <label>search engine</label>
+      <select class="settings-select" onchange="setSearchEngine(this.value)">${searchOpts}</select>
+    </div>
+    <div class="settings-row">
+      <label>wisp server</label>
+      <input type="text" class="settings-input" value="${curWisp}" onchange="setWisp(this.value)" placeholder="wss://fern.best/wisp/">
     </div>
   `);
 }

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Citasune Proxy</title>
+  <link rel="icon" type="image/png" href="/assets/imageassets/CitasuneIcon.png">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      background: #0b0c0d;
+      color: #eee;
+      font: 14px system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #sj-tabs {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      padding: 6px 6px 0;
+      background: #0a0a0b;
+      overflow-x: auto;
+      flex: 0 0 auto;
+    }
+    #sj-tabs::-webkit-scrollbar { height: 0; }
+    .sj-tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 210px;
+      min-width: 120px;
+      padding: 7px 8px;
+      background: #151618;
+      border: 1px solid #222;
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      color: #bbb;
+      cursor: pointer;
+      flex: 0 0 auto;
+      position: relative;
+    }
+    .sj-tab.active { background: #1f2124; color: #fff; }
+    .sj-tab img { width: 16px; height: 16px; flex: 0 0 auto; border-radius: 3px; }
+    .sj-tab .sj-t { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sj-tab .sj-x {
+      flex: 0 0 auto;
+      width: 16px;
+      height: 16px;
+      line-height: 15px;
+      text-align: center;
+      border-radius: 4px;
+      color: #888;
+      font-size: 12px;
+    }
+    .sj-tab .sj-x:hover { background: #333; color: #fff; }
+    #sj-newtab {
+      flex: 0 0 auto;
+      width: 30px;
+      height: 30px;
+      margin-bottom: 1px;
+      background: #151618;
+      border: 1px solid #222;
+      border-radius: 8px;
+      color: #ccc;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+    }
+    #sj-newtab:hover { background: #26282b; }
+    #sj-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      background: #1f2124;
+      flex: 0 0 auto;
+    }
+    #sj-bar button {
+      cursor: pointer;
+      background: #2a2c2f;
+      color: #eee;
+      border: 1px solid #3a3c40;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font: 14px system-ui, sans-serif;
+      line-height: 1;
+    }
+    #sj-bar button:hover { background: #34363a; }
+    #sj-bar button img { width: 16px; height: 16px; object-fit: contain; display: block; }
+    #sj-addr { flex: 1; display: flex; margin: 0; }
+    #sj-addr input {
+      width: 100%;
+      background: #0e0f10;
+      color: #eee;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font: 13px system-ui, sans-serif;
+      outline: none;
+    }
+    #sj-addr input:focus { border-color: #555; }
+    #sj-views { position: relative; flex: 1 1 auto; }
+    #sj-views iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #fff;
+      display: none;
+    }
+    #sj-views iframe.active { display: block; }
+  </style>
+  <script src="/baremux/index.js"></script>
+  <script src="/scram/scramjet.all.js"></script>
+</head>
+<body>
+  <div id="sj-tabs">
+    <button id="sj-newtab" type="button" title="new tab">+</button>
+  </div>
+  <div id="sj-bar">
+    <button id="sj-back" type="button" title="back"><img src="/assets/imageassets/undo.png" alt="back"></button>
+    <button id="sj-fwd" type="button" title="forward"><img src="/assets/imageassets/redo.png" alt="forward"></button>
+    <button id="sj-reload" type="button" title="reload"><img src="/assets/imageassets/refresh.png" alt="reload"></button>
+    <form id="sj-addr">
+      <input id="sj-addrinput" type="text" spellcheck="false" placeholder="enter url or search…">
+    </form>
+    <button id="sj-home" type="button" title="back to citasune (esc)"><img src="/assets/imageassets/CitasuneIcon.png" alt="citasune"></button>
+  </div>
+  <div id="sj-views"></div>
+  <script src="/scripts/main/main.js"></script>
+  <script src="/scripts/main/proxybrowser.js"></script>
+</body>
+</html>

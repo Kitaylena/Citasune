@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Tab</title>
+  <link rel="icon" type="image/png" href="/assets/imageassets/CitasuneIcon.png">
+  <link rel="stylesheet" href="/style/style.css">
+  <style>
+    #quickapps {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-top: 0.6rem;
+    }
+    .qapp {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      width: 84px;
+      height: 84px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      cursor: pointer;
+      color: #fff;
+      font-family: var(--app-font);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .qapp:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(var(--accent-rgb), 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.15);
+    }
+    .qapp img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+      transition: transform 0.25s ease;
+    }
+    .qapp:hover img { transform: scale(1.08); }
+    .qapp span {
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.85);
+      letter-spacing: 0.3px;
+    }
+    .qapp { position: relative; }
+    .qapp.add {
+      font-size: 1.9rem;
+      color: rgba(255, 255, 255, 0.5);
+      border-style: dashed;
+    }
+    .qx {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 16px;
+      height: 16px;
+      line-height: 15px;
+      text-align: center;
+      font-size: 10px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.5);
+      color: #ccc;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    .qapp:hover .qx { opacity: 1; }
+    .qx:hover { background: #d33; color: #fff; }
+  </style>
+</head>
+<body>
+  <div id="background">
+    <canvas id="particleCanvas"></canvas>
+    <div id="checkerpattern"></div>
+  </div>
+
+  <main id="herocontainer">
+    <div id="herocard">
+      <div id="title">
+        <img src="/assets/imageassets/CitasuneIcon.png" alt="Citasune Icon">
+        <h1>Citasune</h1>
+      </div>
+      <p id="randomtext">where would you like to go?</p>
+      <input type="text" id="inputbox" placeholder="search the web.. or put a URL.. yeah." spellcheck="false">
+      <div id="quickapps"></div>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      try {
+        var a = localStorage.getItem("gnAccent");
+        if (a) document.documentElement.style.setProperty("--accent-rgb", a);
+        var bg = localStorage.getItem("gnBg");
+        if (bg) document.documentElement.style.setProperty("--bg", bg);
+        var fn = localStorage.getItem("gnFont");
+        if (fn) document.documentElement.style.setProperty("--app-font", fn);
+        if (localStorage.getItem("gnGlass") === "off") document.body.classList.add("no-glass");
+      } catch (e) {}
+
+      var rt = document.getElementById("randomtext");
+      var time = new Date().toLocaleTimeString();
+      var lines = [
+        "hellooo",
+        "its literally " + time + " what are u doing rn",
+        "All Hail To Benjamin Netanyahu!",
+        "kids be doing ANYTHING but their work",
+        "i recently got into touhou, now i know bad apple is a touhou song",
+        "me when i see verity Bro 😂 ayo nahhh",
+        "july 30th was gubby day do not forget this",
+        "https://autoshot.onrender.com (this sucks ngl sob)",
+        "🟨🟦🟥",
+        "kita ikuyo is my goatt",
+        "go watch bocchi the rock its really good",
+        "the vocaloid community is just killing itself every day with how their behavior is",
+        "visit settings to customize your.. settings idk",
+        "preview 1280",
+        "yo tiktok ai cast verse is so welcoming ❤❤",
+        "polyester man",
+        "my favorite color is purple",
+        "suggest more lines for this list on the dc server",
+        "lucky larp",
+        "how to larp like a pro",
+        "school is starting in a day as im typing this",
+        "kay",
+        "Hey, it's me, it's verity!",
+        "im tired as of right now typing this",
+        "shoutout to mullvad vpn",
+        "did we turn the frogs gay or were the frogs gay from the start",
+        "gold gold gold",
+        "join the discord for more links",
+        "tmodloader shoutout",
+        "half skidded"
+      ];
+      if (rt) rt.innerHTML = lines[Math.floor(Math.random() * lines.length)];
+
+      function go(v) {
+        parent.postMessage({ type: "sj:navigate", value: v }, location.origin);
+      }
+
+      var defaults = [
+        { name: "youtube", url: "https://www.youtube.com/", d: "youtube.com" },
+        { name: "discord", url: "https://discord.com/app", d: "discord.com" },
+        { name: "tiktok", url: "https://www.tiktok.com/", d: "tiktok.com" },
+        { name: "spotify", url: "https://open.spotify.com/", d: "spotify.com" },
+        { name: "github", url: "https://github.com/", d: "github.com", icon: "https://github.githubassets.com/favicons/favicon-dark.svg" },
+        { name: "instagram", url: "https://www.instagram.com/", d: "instagram.com" },
+      ];
+      var qa = document.getElementById("quickapps");
+
+      function domainOf(url) {
+        try { return new URL(url).hostname; } catch (e) { return ""; }
+      }
+      function iconFor(item) {
+        return item.icon || "https://www.google.com/s2/favicons?sz=64&domain=" + (item.d || domainOf(item.url));
+      }
+      function loadCustom() {
+        try { return JSON.parse(localStorage.getItem("gnShortcuts") || "[]"); } catch (e) { return []; }
+      }
+      function saveCustom(list) {
+        try { localStorage.setItem("gnShortcuts", JSON.stringify(list)); } catch (e) {}
+      }
+
+      function makeTile(item, onRemove) {
+        var b = document.createElement("button");
+        b.className = "qapp";
+        b.type = "button";
+        var img = document.createElement("img");
+        img.src = iconFor(item);
+        img.alt = "";
+        var s = document.createElement("span");
+        s.textContent = item.name;
+        b.append(img, s);
+        b.addEventListener("click", function () { go(item.url); });
+        if (onRemove) {
+          var x = document.createElement("span");
+          x.className = "qx";
+          x.textContent = "✕";
+          x.title = "Remove";
+          x.addEventListener("click", function (e) { e.stopPropagation(); onRemove(); });
+          b.appendChild(x);
+        }
+        return b;
+      }
+
+      function popup(html) {
+        if (document.getElementById("popupOverlay")) return null;
+        var wrap = document.createElement("div");
+        wrap.id = "popupWrapper";
+        wrap.innerHTML = "<div class='popup-overlay' id='popupOverlay'>" +
+          "<div class='popup-content'>" +
+          "<span class='popup-close' id='popupClose'>&times;</span>" + html +
+          "</div></div>";
+        document.body.appendChild(wrap);
+        var overlay = document.getElementById("popupOverlay");
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () { overlay.classList.add("active"); });
+        });
+        function close() {
+          overlay.classList.remove("active");
+          setTimeout(function () { wrap.remove(); }, 350);
+        }
+        document.getElementById("popupClose").addEventListener("click", close);
+        overlay.addEventListener("click", function (e) {
+          if (e.target.id === "popupOverlay") close();
+        });
+        return { overlay: overlay, close: close };
+      }
+
+      function addShortcut() {
+        var p = popup(
+          "<h2 style='margin-bottom:1rem;'>add shortcut</h2>" +
+          "<input id='sc-name' class='settings-input' placeholder='name' style='width:100%;margin-bottom:0.7rem;'>" +
+          "<input id='sc-url' class='settings-input' placeholder='https://example.com' style='width:100%;margin-bottom:1.1rem;'>" +
+          "<button id='sc-add-btn' class='settings-btn'>add</button>"
+        );
+        if (!p) return;
+        var nameI = document.getElementById("sc-name");
+        var urlI = document.getElementById("sc-url");
+        nameI.focus();
+        function submit() {
+          var url = urlI.value.trim();
+          if (!url) { urlI.focus(); return; }
+          if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+          var name = nameI.value.trim() || domainOf(url) || url;
+          var list = loadCustom();
+          list.push({ name: name, url: url });
+          saveCustom(list);
+          p.close();
+          render();
+        }
+        document.getElementById("sc-add-btn").addEventListener("click", submit);
+        nameI.addEventListener("keydown", function (e) { if (e.key === "Enter") urlI.focus(); });
+        urlI.addEventListener("keydown", function (e) { if (e.key === "Enter") submit(); });
+      }
+
+      function render() {
+        qa.innerHTML = "";
+        defaults.forEach(function (app) { qa.appendChild(makeTile(app)); });
+        loadCustom().forEach(function (item, idx) {
+          qa.appendChild(makeTile(item, function () {
+            var list = loadCustom();
+            list.splice(idx, 1);
+            saveCustom(list);
+            render();
+          }));
+        });
+        var add = document.createElement("button");
+        add.className = "qapp add";
+        add.type = "button";
+        add.title = "add shortcut";
+        add.textContent = "+";
+        add.addEventListener("click", addShortcut);
+        qa.appendChild(add);
+      }
+      render();
+
+      var box = document.getElementById("inputbox");
+      box.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter") return;
+        var v = box.value.trim();
+        if (v) go(v);
+      });
+      window.addEventListener("focus", function () { box.focus(); });
+      box.focus();
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var canvas = document.getElementById("particleCanvas");
+      if (!canvas) return;
+      var reduceMotion = window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduceMotion) { canvas.style.display = "none"; return; }
+      var ctx = canvas.getContext("2d");
+      var particles = [];
+      var w = 0, h = 0;
+
+      function resizeCanvas() {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      }
+      resizeCanvas();
+      window.addEventListener("resize", resizeCanvas);
+
+      var particleCount = Math.max(15, Math.min(40, Math.round(window.innerWidth / 45)));
+
+      function Particle() { this.reset(true); }
+      Particle.prototype.reset = function (anywhere) {
+        this.x = Math.random() * w;
+        this.y = anywhere ? Math.random() * h : h + 10;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedY = (Math.random() * 0.4 + 0.1) * 60;
+        this.speedX = (Math.random() * 0.2 - 0.1) * 60;
+        this.opacity = Math.random() * 0.5 + 0.1;
+      };
+      Particle.prototype.update = function (dt) {
+        this.y -= this.speedY * dt;
+        this.x += this.speedX * dt;
+        if (this.y < -10 || this.x < -10 || this.x > w + 10) this.reset(false);
+      };
+      Particle.prototype.draw = function () {
+        ctx.fillStyle = "rgba(255, 255, 255, " + this.opacity + ")";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      };
+
+      for (var i = 0; i < particleCount; i++) particles.push(new Particle());
+
+      var frameInterval = 1000 / 30;
+      var last = 0;
+      function animate(now) {
+        requestAnimationFrame(animate);
+        if (document.hidden) { last = now; return; }
+        var elapsed = now - last;
+        if (elapsed < frameInterval) return;
+        var dt = Math.min(elapsed, 100) / 1000;
+        last = now - (elapsed % frameInterval);
+        ctx.clearRect(0, 0, w, h);
+        for (var j = 0; j < particles.length; j++) {
+          particles[j].update(dt);
+          particles[j].draw();
+        }
+      }
+      requestAnimationFrame(animate);
+    })();
+  </script>
+</body>
+</html>
