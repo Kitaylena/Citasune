@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
     dmcabutton.addEventListener("click", () => {
       createpopup(`
         <h2 style="margin-bottom: 10px;">DMCA Notice</h2>
-        <p style="margin-bottom: 15px;">This website may contain copyrighted material. If you believe that your copyrighted work has been used in a way that constitutes copyright infringement, please contact us at <a href='mailto:dmca@example.com'>dmca@example.com</a> and start your email header with !DMCA.</p>
+        <p style="margin-bottom: 15px;">This website may contain copyrighted material. If you believe that your copyrighted work has been used in a way that constitutes copyright infringement, please contact us at <a href='mailto:citasunebusiness@gmail.com'>citasunebusiness@gmail.com</a> and start your email header with !DMCA.</p>
         <p style="margin-bottom: 10px;">NOTE: EMAILING IS SLOWER AND MIGHT TAKE WEEKS.</p>
         <p style="margin-bottom: 10px;">Recommended option is to join our discord server and go in general channel and ping @Kitaylena and you will get a instant response.</p>
       `);
@@ -79,67 +79,66 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("particleCanvas");
   if (!canvas) return;
-
+  const reduceMotion =
+    window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion) {
+    canvas.style.display = "none";
+    return;
+  }
   const ctx = canvas.getContext("2d");
   let particles = [];
-  const particleCount = 40;
+  let w = 0, h = 0;
 
   function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
   }
-
   resizeCanvas();
   window.addEventListener("resize", resizeCanvas);
 
-  class Particle {
-    constructor() {
-      this.reset();
-    }
+  const particleCount = Math.max(15, Math.min(40, Math.round(window.innerWidth / 45)));
 
-    reset() {
-      this.x = Math.random() * canvas.width;
-      this.y = Math.random() * canvas.height + canvas.height;
+  class Particle {
+    constructor() { this.reset(true); }
+    reset(anywhere) {
+      this.x = Math.random() * w;
+      this.y = anywhere ? Math.random() * h : h + 10;
       this.size = Math.random() * 2 + 0.5;
-      this.speedY = Math.random() * 0.4 + 0.1;
-      this.speedX = Math.random() * 0.2 - 0.1;
+      this.speedY = (Math.random() * 0.4 + 0.1) * 60;
+      this.speedX = (Math.random() * 0.2 - 0.1) * 60;
       this.opacity = Math.random() * 0.5 + 0.1;
     }
-
-    update() {
-      this.y -= this.speedY;
-      this.x += this.speedX;
-
-      if (this.y < -10 || this.x < -10 || this.x > canvas.width + 10) {
-        this.reset();
-        this.y = canvas.height + 10;
-      }
+    update(dt) {
+      this.y -= this.speedY * dt;
+      this.x += this.speedX * dt;
+      if (this.y < -10 || this.x < -10 || this.x > w + 10) this.reset(false);
     }
-
     draw() {
-      ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+      ctx.fillStyle = "rgba(255, 255, 255, " + this.opacity + ")";
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 
-  for (let i = 0; i < particleCount; i++) {
-    const p = new Particle();
-    p.y = Math.random() * canvas.height;
-    particles.push(p);
-  }
+  for (let i = 0; i < particleCount; i++) particles.push(new Particle());
 
-  function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach((p) => {
-      p.update();
-      p.draw();
-    });
+  const frameInterval = 1000 / 30;
+  let last = 0;
+  function animate(now) {
     requestAnimationFrame(animate);
+    if (document.hidden) { last = now; return; }
+    const elapsed = now - last;
+    if (elapsed < frameInterval) return;
+    const dt = Math.min(elapsed, 100) / 1000;
+    last = now - (elapsed % frameInterval);
+    ctx.clearRect(0, 0, w, h);
+    for (let i = 0; i < particles.length; i++) {
+      particles[i].update(dt);
+      particles[i].draw();
+    }
   }
-
-  animate();
+  requestAnimationFrame(animate);
 });
 // proxy
 const proxyinputtextbox = document.getElementById("inputbox");
