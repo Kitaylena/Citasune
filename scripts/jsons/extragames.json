@@ -47,7 +47,7 @@
   "id": 1004,
   "name": "Crimson Fantasia",
   "cover": "/assets/gameicons/1004.png",
-  "url": "/games/crimson/index.html",
+  "url": "/games/crimson.html",
   "author": "unknown",
   "authorLink": ""
  },
@@ -114,7 +114,7 @@
   "id": 1013,
   "name": "GTA Simulator",
   "cover": "/assets/gameicons/1013.png",
-  "url": "/games/gta/index.html",
+  "url": "/games/gtasim.html",
   "author": "FreezeNova",
   "authorLink": "https://www.freezenova.com",
   "special": [
@@ -136,7 +136,7 @@
   "id": 1015,
   "name": "Dude Theft Wars",
   "cover": "/assets/gameicons/1015.png",
-  "url": "/games/dudetheftwars/index.html",
+  "url": "/games/dudetheftwars.html",
   "author": "Poxel Studios Games",
   "authorLink": "https://play.google.com/store/apps/details?id=com.PoxelStudios.DudeTheftAuto&hl=en_US",
   "special": [
@@ -144,66 +144,63 @@
   ]
  },
  {
- "id": 1016,
-"name": "Angry Birds 2",
- "cover": "/assets/gameicons/1016.png",
-"url": "/games/angrybirds2.html",
-"author": "Rovio Entertainment",
-"authorLink": "https://www.rovio.com",
- "special": [
- "port"
- ]
-  },
-  {
- "id": 1017,
-"name": "Wolfenstein 3D",
- "cover": "/assets/gameicons/1017.png",
-"url": "/games/wolfenstein3d.html",
-"author": "Raven Software",
-"authorLink": "https://www.ravensoftware.com",
- "special": [
- "port"
- ]
-  },
-  {
- "id": 1018,
-"name": "Prank Call Tung Tung Sahur Clicker",
- "cover": "/assets/gameicons/1018.png",
-"url": "/games/prankcallr.html",
-"author": "unknown",
-"authorLink": "",
- "special": [
- ]
-  },
-  {
- "id": 1019,
-"name": "Stickman GTA City",
- "cover": "/assets/gameicons/1019.png",
-"url": "/games/stickmangtacity.html",
-"author": "unknown",
-"authorLink": "",
- "special": [
- ]
-  },
-  {
- "id": 1020,
-"name": "Touhou 6: The Embodiment of Scarlet Devil",
- "cover": "/assets/gameicons/1020.png",
-"url": "/games/touhou6.html",
-"author": "Team Shanghai Alice",
-"authorLink": "https://www16.big.or.jp/~zun/top.html",
- "special": [
-    "port"
- ]
-  },
-  {
- "id": 10000,
-"name": "Placeholder Test",
- "cover": "/assets/imageassets/placeholder.jpg",
-"url": "/games/placeholdertest.html",
-"author": "Citasune, THIS IS MAINLY TO SEE IF EXTRAGAMES.JSON WORKS.",
-"authorLink": "",
- "special": [
- ]
-  }
+  "id": 1016,
+  "name": "Angry Birds 2",
+  "cover": "/assets/gameicons/1016.png",
+  "url": "/games/angrybirds2.html",
+  "author": "Rovio Entertainment",
+  "authorLink": "https://www.rovio.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 1017,
+  "name": "Wolfenstein 3D",
+  "cover": "/assets/gameicons/1017.png",
+  "url": "/games/wolfenstein.html",
+  "author": "Raven Software",
+  "authorLink": "https://www.ravensoftware.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 1018,
+  "name": "Prank Call Tung Tung Sahur Clicker",
+  "cover": "/assets/gameicons/1018.png",
+  "url": "/games/prankcall.html",
+  "author": "unknown",
+  "authorLink": "",
+  "special": []
+ },
+ {
+  "id": 1019,
+  "name": "Stickman GTA City",
+  "cover": "/assets/gameicons/1019.png",
+  "url": "/games/stickmangtacity.html",
+  "author": "unknown",
+  "authorLink": "",
+  "special": []
+ },
+ {
+  "id": 1020,
+  "name": "Touhou 6: The Embodiment of Scarlet Devil",
+  "cover": "/assets/gameicons/1020.png",
+  "url": "/games/touhou6.html",
+  "author": "Team Shanghai Alice",
+  "authorLink": "https://www16.big.or.jp/~zun/top.html",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 10000,
+  "name": "Placeholder Test",
+  "cover": "/assets/imageassets/placeholder.jpg",
+  "url": "/games/placeholdertest.html",
+  "author": "Citasune, THIS IS MAINLY TO SEE IF EXTRAGAMES.JSON WORKS.",
+  "authorLink": "",
+  "special": []
+ }
 ]
