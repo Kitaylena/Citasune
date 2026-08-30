@@ -19,19 +19,13 @@
 
   var TRANSPORT = "/libcurl/index.js";
   var PRIMARY_WISP = "wss://us-east.wisp.q13x.com";
-  var WISP_FALLBACKS = [
-    "wss://us-east.wisp.q13x.com",
-	"wss://us-east.wisp.q13x.com",
-    "wss://glseries.net/wisp/",
-    "wss://wisp.rhw.one/wisp/",
-    "wss://anura.pro/",
-    "wss://fern.best/wisp/",
-    "wss://eu-central.wisp.q13x.com/",
-	"wss://se-asia.wisp.q13x.com"
-  ];
-  var WISP = PRIMARY_WISP;
   var NEWTAB = "/pages/newtab.html";
   var DEFAULT_SEARCH = "https://duckduckgo.com/?q=%s";
+
+  // the wisp list and the parallel reachability race live in proxywarm.js, which
+  // the homepage loads too — so by the time anyone gets here a server has
+  // usually already been picked and cached.
+  var warm = window.CitaWisp;
 
   var loaded = $scramjetLoadController();
   var scramjet = new loaded.ScramjetController({
@@ -42,18 +36,15 @@
       wasm: "/scram/scramjet.wasm.wasm",
     },
   });
-  scramjet.init();
 
   var conn = new BareMux.BareMuxConnection("/baremux/worker.js");
 
-  // set a wisp server, then probe it with a quick request; false if it can't connect
-  async function testWisp(url) {
-    try { await conn.setTransport(TRANSPORT, [{ websocket: url }]); }
-    catch (e) { return false; }
+  // confirm the tunnel actually carries traffic, not just that the socket opened
+  async function verify() {
     try {
       var client = new BareMux.BareClient();
       var ctrl = new AbortController();
-      var to = setTimeout(function () { ctrl.abort(); }, 5000);
+      var to = setTimeout(function () { ctrl.abort(); }, 4000);
       try {
         await client.fetch("https://example.com/", { method: "HEAD", redirect: "manual", signal: ctrl.signal });
         return true;
@@ -61,27 +52,24 @@
     } catch (e) { return false; }
   }
 
-  // try the saved/cached server first, then fall through the list; first that
-  // actually connects wins, and is cached for the rest of the session.
-  async function pickTransport() {
-    var order = [];
-    try { var saved = localStorage.getItem("gnWisp"); if (saved) order.push(saved); } catch (e) {}
-    try { var cached = sessionStorage.getItem("gnWispActive"); if (cached) order.push(cached); } catch (e) {}
-    for (var i = 0; i < WISP_FALLBACKS.length; i++) order.push(WISP_FALLBACKS[i]);
-    var seen = {};
-    order = order.filter(function (u) { if (!u || seen[u]) return false; seen[u] = true; return true; });
-    for (var j = 0; j < order.length; j++) {
-      if (await testWisp(order[j])) {
-        WISP = order[j];
-        try { sessionStorage.setItem("gnWispActive", WISP); } catch (e) {}
-        return;
-      }
-    }
-    WISP = order[0] || PRIMARY_WISP;
-    try { await conn.setTransport(TRANSPORT, [{ websocket: WISP }]); } catch (e) {}
+  function useWisp(url) {
+    return conn.setTransport(TRANSPORT, [{ websocket: url }]);
   }
 
-  var ready = (async function () {
+  // an open socket is enough to start browsing on, so the UI isn't held for
+  // this. if the tunnel turns out to be broken, swap in the next reachable
+  // server underneath the user.
+  async function verifyLater(url) {
+    if (await verify()) return;
+    if (warm) warm.invalidate();
+    var rest = warm ? await warm.others(url) : [];
+    for (var i = 0; i < rest.length; i++) {
+      try { await useWisp(rest[i]); } catch (e) { continue; }
+      if (await verify()) return;
+    }
+  }
+
+  var swReady = (async function () {
     await navigator.serviceWorker.register("/sw.js");
     await navigator.serviceWorker.ready;
     if (!navigator.serviceWorker.controller) {
@@ -90,11 +78,49 @@
         function fin() { if (!done) { done = true; res(); } }
         navigator.serviceWorker.addEventListener("controllerchange", fin, { once: true });
         if (navigator.serviceWorker.controller) fin();
-        setTimeout(fin, 2000);
+        setTimeout(fin, 3000);
       });
     }
-    await pickTransport();
   })();
+
+  // init() writes the config to indexeddb and posts it to the service worker,
+  // and the worker can't route a single proxied request until that lands. it
+  // also needs a controller to exist or its postMessage is dropped — so this has
+  // to run after swReady, and it has to be awaited.
+  var sjReady = swReady.then(function () { return scramjet.init(); });
+
+  // needs neither the service worker nor scramjet, so it runs alongside them
+  var wispReady = (async function () {
+    var url = (warm && await warm.pick()) || PRIMARY_WISP;
+    await useWisp(url);
+    verifyLater(url);
+  })();
+
+  var ready = Promise.all([sjReady, wispReady]);
+  var isReady = false, failed = false;
+  var elStatus = document.getElementById("sj-status");
+
+  ready.then(function () { settle(true); }, function () { settle(false); });
+
+  function settle(ok) {
+    isReady = ok;
+    failed = !ok;
+    showStatus(false);
+  }
+
+  function showStatus(on) {
+    if (elStatus) elStatus.classList.toggle("on", !!on);
+  }
+
+  // nothing may hit the network before scramjet's client is up, so navigations
+  // queue rather than erroring out. typing is never blocked. if setup failed
+  // outright we run the navigation anyway, so the user sees the real error
+  // instead of a page that silently ignores them.
+  function whenReady(fn) {
+    if (isReady || failed) { fn(); return; }
+    showStatus(true);
+    ready.then(fn, fn);
+  }
 
   function searchTemplate() {
     try { return localStorage.getItem("gnSearch") || DEFAULT_SEARCH; } catch (e) { return DEFAULT_SEARCH; }
@@ -136,7 +162,7 @@
       t.isNew = false;
       t.url = url;
       elAddr.value = url;
-      t.frame.go(url);
+      whenReady(function () { t.frame.go(url); });
     } else {
       navigate(url);
     }
@@ -191,7 +217,7 @@
 
     activateTab(id);
     if (isNew) iframe.src = NEWTAB;
-    else frame.go(url);
+    else whenReady(function () { frame.go(url); });
     return tab;
   }
 
@@ -222,7 +248,7 @@
     t.isNew = false;
     t.url = url;
     elAddr.value = url;
-    t.frame.go(url);
+    whenReady(function () { t.frame.go(url); });
   }
 
   // per-tab history so back/forward walk the proxied site, not the joint
@@ -243,7 +269,7 @@
       t.isNew = false;
       t.url = t.history[t.hpos];
       elAddr.value = t.url;
-      t.frame.go(t.url);
+      whenReady(function () { t.frame.go(t.url); });
     });
   }
 
@@ -255,7 +281,7 @@
       t.isNew = false;
       t.url = t.history[t.hpos];
       elAddr.value = t.url;
-      t.frame.go(t.url);
+      whenReady(function () { t.frame.go(t.url); });
     });
   }
 
@@ -287,7 +313,9 @@
 
   document.getElementById("sj-back").addEventListener("click", back);
   document.getElementById("sj-fwd").addEventListener("click", forward);
-  document.getElementById("sj-reload").addEventListener("click", function () { withActive(function (t) { t.frame.reload(); }); });
+  document.getElementById("sj-reload").addEventListener("click", function () {
+    withActive(function (t) { whenReady(function () { t.frame.reload(); }); });
+  });
   document.getElementById("sj-home").addEventListener("click", goHome);
   addBtn.addEventListener("click", function () { newTab(NEWTAB); });
   document.getElementById("sj-addr").addEventListener("submit", function (e) {
@@ -300,10 +328,16 @@
   });
   window.addEventListener("message", onMessage);
 
-  (async function () {
-    var q = new URLSearchParams(location.search).get("q");
-    try { await ready; } catch (e) {}
-    if (q) newTab(toUrl(q));
-    else newTab(NEWTAB);
-  })();
+  // main.js calls this when the wisp server is changed in settings, so the new
+  // one takes effect without a reload.
+  window.__setWisp = function (url) {
+    if (!url) return;
+    if (warm) warm.invalidate();
+    useWisp(url).then(function () { verifyLater(url); }, function () {});
+  };
+
+  // the chrome and the local new tab page don't need the tunnel, so they go up
+  // immediately; only the navigation itself waits.
+  var q = new URLSearchParams(location.search).get("q");
+  newTab(q ? toUrl(q) : NEWTAB);
 })();
