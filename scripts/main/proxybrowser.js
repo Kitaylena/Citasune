@@ -21,11 +21,13 @@
   var PRIMARY_WISP = "wss://us-east.wisp.q13x.com";
   var WISP_FALLBACKS = [
     "wss://us-east.wisp.q13x.com",
+	"wss://us-east.wisp.q13x.com",
     "wss://glseries.net/wisp/",
     "wss://wisp.rhw.one/wisp/",
     "wss://anura.pro/",
     "wss://fern.best/wisp/",
     "wss://eu-central.wisp.q13x.com/",
+	"wss://se-asia.wisp.q13x.com"
   ];
   var WISP = PRIMARY_WISP;
   var NEWTAB = "/pages/newtab.html";
