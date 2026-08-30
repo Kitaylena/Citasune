@@ -84,15 +84,39 @@ const ready = withTimeout(ensureDB(), DB_TIMEOUT)
   .catch(() => {})
   .then(() => new ScramjetServiceWorker());
 
-// loadConfig() throws outright if the object stores don't exist, and leaves
-// scramjet.config undefined if they do but the config hasn't been written yet.
-// route() then dereferences this.config.prefix and throws, which rejects
+// loadConfig() is the only thing that publishes the config into scramjet's own
+// module state, and the url codec, the rewriter and the wasm loader all read
+// that state rather than the worker's scramjet.config field. the controller also
+// posts the config here as a message, and the worker's handler for it assigns
+// scramjet.config directly — which is worse than useless, because loadConfig()
+// returns at its first line when that field is already set. so a worker that got
+// the message looks configured from the outside while the rewriter still sees
+// nothing: route() reads scramjet.config.prefix and passes, then fetch() reads
+// the unpublished module config and throws on .prefix, which rejects
 // respondWith() and shows the user a network error instead of a page.
+//
+// clearing the field before each attempt forces the indexeddb read that does
+// publish it. the controller writes the config to the database before it posts
+// the message, so by the time the message could have landed the database already
+// has it, and ignoring the copy the message left behind costs nothing.
+//
+// loadConfig() also throws outright if the object stores don't exist, and leaves
+// the config unset if they exist but the controller hasn't written it yet.
+let configured = false;
+
 async function tryLoadConfig(scramjet) {
+  if (configured) return true;
+  const messaged = scramjet.config;
+  scramjet.config = undefined;
   try {
     await scramjet.loadConfig();
   } catch (e) {}
-  return !!scramjet.config;
+  if (!scramjet.config) {
+    scramjet.config = messaged;
+    return false;
+  }
+  configured = true;
+  return true;
 }
 
 // a proxied navigation that arrives mid-init is worth waiting on rather than
@@ -113,8 +137,10 @@ async function handleRequest(event) {
     ok = await waitForConfig(scramjet);
   }
   if (ok) {
+    // fetch() rejects rather than throwing, so it has to be awaited inside the
+    // try for the fallback below to catch anything at all.
     try {
-      if (scramjet.route(event)) return scramjet.fetch(event);
+      if (scramjet.route(event)) return await scramjet.fetch(event);
     } catch (e) {}
   }
   return fetch(event.request);
