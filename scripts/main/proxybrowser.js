@@ -18,14 +18,18 @@
   }
 
   var TRANSPORT = "/libcurl/index.js";
-  var PRIMARY_WISP = "wss://us-east.wisp.q13x.com";
+  var FALLBACK_WISP = "wss://us-east.wisp.q13x.com";
   var NEWTAB = "/pages/newtab.html";
   var DEFAULT_SEARCH = "https://duckduckgo.com/?q=%s";
 
-  // the wisp list and the parallel reachability race live in proxywarm.js, which
-  // the homepage loads too — so by the time anyone gets here a server has
-  // usually already been picked and cached.
+  // proxywarm.js holds the configured wisp server (settings value, else the
+  // default from main.js). we connect straight to it — no probing or racing, so
+  // the only socket that ever opens is the one the user actually chose.
   var warm = window.CitaWisp;
+
+  function wispUrl() {
+    return (warm && warm.server()) || FALLBACK_WISP;
+  }
 
   var loaded = $scramjetLoadController();
   var scramjet = new loaded.ScramjetController({
@@ -39,39 +43,33 @@
 
   var conn = new BareMux.BareMuxConnection("/baremux/worker.js");
 
-  // confirm the tunnel actually carries traffic, not just that the socket opened
-  async function verify() {
-    try {
-      var client = new BareMux.BareClient();
-      var ctrl = new AbortController();
-      var to = setTimeout(function () { ctrl.abort(); }, 4000);
-      try {
-        await client.fetch("https://example.com/", { method: "HEAD", redirect: "manual", signal: ctrl.signal });
-        return true;
-      } finally { clearTimeout(to); }
-    } catch (e) { return false; }
-  }
-
   function useWisp(url) {
     return conn.setTransport(TRANSPORT, [{ websocket: url }]);
   }
 
-  // an open socket is enough to start browsing on, so the UI isn't held for
-  // this. if the tunnel turns out to be broken, swap in the next reachable
-  // server underneath the user.
-  async function verifyLater(url) {
-    if (await verify()) return;
-    if (warm) warm.invalidate();
-    var rest = warm ? await warm.others(url) : [];
-    for (var i = 0; i < rest.length; i++) {
-      try { await useWisp(rest[i]); } catch (e) { continue; }
-      if (await verify()) return;
-    }
+  var RELOAD_FLAG = "gnSwReload";
+
+  function reloadTried() {
+    try { return sessionStorage.getItem(RELOAD_FLAG) === "1"; } catch (e) { return false; }
   }
 
+  function markReload(on) {
+    try {
+      if (on) sessionStorage.setItem(RELOAD_FLAG, "1");
+      else sessionStorage.removeItem(RELOAD_FLAG);
+    } catch (e) {}
+  }
+
+  // every proxied request has to go through the service worker, so a page that
+  // is registered but not *controlled* sends the scramjet url straight to the
+  // static origin and gets a 404. serviceWorker.ready does not imply controlled
+  // on a first visit, so wait for the controller, and if it still hasn't claimed
+  // us, reload once — a fresh navigation is always controlled. the
+  // sessionStorage flag keeps a broken worker from looping us forever.
   var swReady = (async function () {
     await navigator.serviceWorker.register("/sw.js");
     await navigator.serviceWorker.ready;
+
     if (!navigator.serviceWorker.controller) {
       await new Promise(function (res) {
         var done = false;
@@ -81,6 +79,17 @@
         setTimeout(fin, 3000);
       });
     }
+
+    if (navigator.serviceWorker.controller) {
+      markReload(false);
+      return;
+    }
+
+    if (reloadTried()) return;
+    markReload(true);
+    location.reload();
+    // the reload isn't instant; nothing downstream should treat setup as done
+    await new Promise(function () {});
   })();
 
   // init() writes the config to indexeddb and posts it to the service worker,
@@ -90,11 +99,7 @@
   var sjReady = swReady.then(function () { return scramjet.init(); });
 
   // needs neither the service worker nor scramjet, so it runs alongside them
-  var wispReady = (async function () {
-    var url = (warm && await warm.pick()) || PRIMARY_WISP;
-    await useWisp(url);
-    verifyLater(url);
-  })();
+  var wispReady = useWisp(wispUrl());
 
   var ready = Promise.all([sjReady, wispReady]);
   var isReady = false, failed = false;
@@ -332,8 +337,7 @@
   // one takes effect without a reload.
   window.__setWisp = function (url) {
     if (!url) return;
-    if (warm) warm.invalidate();
-    useWisp(url).then(function () { verifyLater(url); }, function () {});
+    useWisp(url).then(null, function () {});
   };
 
   // the chrome and the local new tab page don't need the tunnel, so they go up
