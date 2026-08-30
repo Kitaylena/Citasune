@@ -96,7 +96,22 @@
   // and the worker can't route a single proxied request until that lands. it
   // also needs a controller to exist or its postMessage is dropped — so this has
   // to run after swReady, and it has to be awaited.
-  var sjReady = swReady.then(function () { return scramjet.init(); });
+  //
+  // it throws on a database an older version of the site left without object
+  // stores (see the long note in sw.js). the worker repairs that during its own
+  // startup, so retrying picks the repair up on this load instead of leaving the
+  // user with a tab that 404s until they clear site data.
+  async function init() {
+    for (var i = 0; ; i++) {
+      try { return await scramjet.init(); }
+      catch (e) {
+        if (i >= 4) throw e;
+        await new Promise(function (res) { setTimeout(res, 250); });
+      }
+    }
+  }
+
+  var sjReady = swReady.then(init);
 
   // needs neither the service worker nor scramjet, so it runs alongside them
   var wispReady = useWisp(wispUrl());
