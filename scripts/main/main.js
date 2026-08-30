@@ -75,8 +75,8 @@ document.addEventListener("DOMContentLoaded", () => {
     creditsbutton.addEventListener("click", () => {
       createpopup(`
         <h2 style="margin-bottom: 10px;">Credits</h2>
-        <p style="margin-bottom: 25px;">Citasune was created by <a href='https://github.com/Kitaylena'>Kitaylena</a>.</p>
-        <p style="margin-bottom: 10px;">Any webport credits will be within next to the title when you play a game.</p>
+        <p style="margin-bottom: 25px;">Citasune was created by <a href='https://github.com/Kitaylena'>Kitaylena</a> (with help from <a href="https://github.com/ajtabjs" target="_blank">aj</a>.</p>
+        <p style="margin-bottom: 10px;">Any web port credits will be within next to the title when you play a game.</p>
         <p style="margin-bottom: 10px;">This repo contains all web-ports along with credits. <a href='https://github.com/gays-studio/web-port-list' target='_blank'>https://github.com/gays-studio/web-port-list</a></p>
       `);
     });
