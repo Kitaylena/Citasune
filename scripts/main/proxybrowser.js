@@ -204,8 +204,13 @@
     showStatus(false);
   }
 
-  function showStatus(on) {
-    if (elStatus) elStatus.classList.toggle("on", !!on);
+  var CONNECTING_MSG = "connecting…";
+  var SWITCHING_MSG = "switching servers to find one that is available to you..";
+
+  function showStatus(on, msg) {
+    if (!elStatus) return;
+    if (on) elStatus.textContent = msg || CONNECTING_MSG;
+    elStatus.classList.toggle("on", !!on);
   }
 
   // nothing may hit the network before scramjet's client is up, so navigations
@@ -385,9 +390,11 @@
   // clears the trail and caches the server for the session.
   function maybeFallback(tab) {
     if (tab.isNew || !tab.url) return;
+    var active = tab.id === activeId;
     if (!isErrorPage(tab.iframe)) {
       tab.tried = null;
       if (currentServer) { try { sessionStorage.setItem("gnWispActive", currentServer); } catch (e) {} }
+      if (active) showStatus(false);
       return;
     }
     if (!tab.tried) tab.tried = [];
@@ -397,9 +404,14 @@
     for (var i = 0; i < list.length; i++) {
       if (tab.tried.indexOf(list[i]) === -1) { next = list[i]; break; }
     }
-    if (!next) { console.warn("[proxy] all wisp servers failed for", tab.url); return; }
+    if (!next) {
+      console.warn("[proxy] all wisp servers failed for", tab.url);
+      if (active) showStatus(false);
+      return;
+    }
     tab.tried.push(next);
     console.log("[proxy] wisp server failed, trying", next);
+    if (active) showStatus(true, SWITCHING_MSG);
     try { sessionStorage.removeItem("gnWispActive"); } catch (e) {}
     useWisp(next).then(
       function () { tab.frame.go(tab.url); },
