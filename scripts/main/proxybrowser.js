@@ -31,7 +31,6 @@
     "wss://anura.pro/",
     "wss://eu-central.wisp.q13x.com/",
   ];
-  var MAX_FALLBACK = 6;
 
   // proxywarm.js holds the configured wisp server (settings value, else the
   // default from main.js). currentServer is what we're actually using — the
@@ -361,9 +360,29 @@
     } catch (e) { return false; }
   }
 
+  // every server the fallback may walk: the reliable ones first, then the whole
+  // settings list (main.js wispServers), deduped and slash-normalized.
+  function serverList() {
+    var out = [];
+    function add(u) {
+      u = (u || "").trim();
+      if (!u) return;
+      if (!/\/$/.test(u)) u += "/";
+      if (out.indexOf(u) === -1) out.push(u);
+    }
+    WISP_FALLBACKS.forEach(add);
+    try {
+      if (typeof wispServers !== "undefined" && wispServers.length) {
+        wispServers.forEach(function (s) { add(s.url); });
+      }
+    } catch (e) {}
+    return out;
+  }
+
   // when a page comes back as scramjet's error, the configured server couldn't
-  // reach it — switch to the next untried server and reload the same url. a
-  // working load clears the trail and caches the server for the session.
+  // reach it — switch to the next untried server and reload the same url. it
+  // walks the whole list until one works or all are exhausted; a working load
+  // clears the trail and caches the server for the session.
   function maybeFallback(tab) {
     if (tab.isNew || !tab.url) return;
     if (!isErrorPage(tab.iframe)) {
@@ -373,15 +392,13 @@
     }
     if (!tab.tried) tab.tried = [];
     if (currentServer && tab.tried.indexOf(currentServer) === -1) tab.tried.push(currentServer);
-    if (tab.tried.length >= MAX_FALLBACK) {
-      console.warn("[proxy] all wisp servers failed for", tab.url);
-      return;
-    }
+    var list = serverList();
     var next = null;
-    for (var i = 0; i < WISP_FALLBACKS.length; i++) {
-      if (tab.tried.indexOf(WISP_FALLBACKS[i]) === -1) { next = WISP_FALLBACKS[i]; break; }
+    for (var i = 0; i < list.length; i++) {
+      if (tab.tried.indexOf(list[i]) === -1) { next = list[i]; break; }
     }
-    if (!next) { console.warn("[proxy] no more wisp servers to try for", tab.url); return; }
+    if (!next) { console.warn("[proxy] all wisp servers failed for", tab.url); return; }
+    tab.tried.push(next);
     console.log("[proxy] wisp server failed, trying", next);
     try { sessionStorage.removeItem("gnWispActive"); } catch (e) {}
     useWisp(next).then(
