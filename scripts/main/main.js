@@ -451,6 +451,8 @@ function setWisp(url) {
   // libcurl-transport needs a trailing slash on the wisp url
   if (!/\/$/.test(url)) url += "/";
   try { localStorage.setItem("gnWisp", url); } catch (e) {}
+  // a manual choice overrides any server a fallback had cached this session
+  try { sessionStorage.removeItem("gnWispActive"); } catch (e) {}
   if (typeof window.__setWisp === "function") window.__setWisp(url);
   const box = document.getElementById("wispCustom");
   if (box && box.value.trim() !== url) box.value = url;

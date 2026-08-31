@@ -18,17 +18,31 @@
   }
 
   var TRANSPORT = "/libcurl/index.js";
-  var FALLBACK_WISP = "wss://us-east.wisp.q13x.com/";
+  var FALLBACK_WISP = "wss://wisp.rhw.one/wisp/";
   var NEWTAB = "/pages/newtab.html";
   var DEFAULT_SEARCH = "https://duckduckgo.com/?q=%s";
 
+  // servers to fall through when the configured one can't reach a site, ordered
+  // most-reliable first so a dead primary lands on a working one quickly.
+  var WISP_FALLBACKS = [
+    "wss://wisp.rhw.one/wisp/",
+    "wss://fern.best/wisp/",
+    "wss://glseries.net/wisp/",
+    "wss://anura.pro/",
+    "wss://eu-central.wisp.q13x.com/",
+  ];
+  var MAX_FALLBACK = 6;
+
   // proxywarm.js holds the configured wisp server (settings value, else the
-  // default from main.js). we connect straight to it — no probing or racing, so
-  // the only socket that ever opens is the one the user actually chose.
+  // default from main.js). currentServer is what we're actually using — the
+  // configured one at first, or whatever a fallback has switched us to. it's
+  // cached per session so a dead primary isn't re-tried on every navigation.
   var warm = window.CitaWisp;
+  var currentServer = null;
+  try { currentServer = sessionStorage.getItem("gnWispActive") || null; } catch (e) {}
 
   function wispUrl() {
-    return (warm && warm.server()) || FALLBACK_WISP;
+    return currentServer || (warm && warm.server()) || FALLBACK_WISP;
   }
 
   var loaded = $scramjetLoadController();
@@ -48,6 +62,7 @@
     // trailing slash, so normalize both here — the one place every server flows.
     url = (url || "").trim();
     if (url && !/\/$/.test(url)) url += "/";
+    currentServer = url;
     return conn.setTransport(TRANSPORT, [{ websocket: url }]);
   }
 
@@ -243,6 +258,7 @@
     if (t) {
       activateTab(t.id);
       t.isNew = false;
+      t.tried = null;
       t.url = url;
       elAddr.value = url;
       whenReady(function () { t.frame.go(url); });
@@ -296,6 +312,7 @@
     iframe.addEventListener("load", function () {
       updateMeta(tab);
       try { tab.iframe.contentDocument.addEventListener("keydown", onPanicKey); } catch (e) {}
+      maybeFallback(tab);
     });
 
     activateTab(id);
@@ -329,9 +346,48 @@
     var t = tabs.find(function (x) { return x.id === activeId; });
     if (!t) { newTab(url); return; }
     t.isNew = false;
+    t.tried = null;
     t.url = url;
     elAddr.value = url;
     whenReady(function () { t.frame.go(url); });
+  }
+
+  // scramjet serves its "Uh oh" error page on our own origin, so we can read the
+  // iframe and tell a proxy failure (dead wisp server) from a real page.
+  function isErrorPage(iframe) {
+    try {
+      var doc = iframe.contentDocument;
+      return !!(doc && doc.getElementById("errorTitle"));
+    } catch (e) { return false; }
+  }
+
+  // when a page comes back as scramjet's error, the configured server couldn't
+  // reach it — switch to the next untried server and reload the same url. a
+  // working load clears the trail and caches the server for the session.
+  function maybeFallback(tab) {
+    if (tab.isNew || !tab.url) return;
+    if (!isErrorPage(tab.iframe)) {
+      tab.tried = null;
+      if (currentServer) { try { sessionStorage.setItem("gnWispActive", currentServer); } catch (e) {} }
+      return;
+    }
+    if (!tab.tried) tab.tried = [];
+    if (currentServer && tab.tried.indexOf(currentServer) === -1) tab.tried.push(currentServer);
+    if (tab.tried.length >= MAX_FALLBACK) {
+      console.warn("[proxy] all wisp servers failed for", tab.url);
+      return;
+    }
+    var next = null;
+    for (var i = 0; i < WISP_FALLBACKS.length; i++) {
+      if (tab.tried.indexOf(WISP_FALLBACKS[i]) === -1) { next = WISP_FALLBACKS[i]; break; }
+    }
+    if (!next) { console.warn("[proxy] no more wisp servers to try for", tab.url); return; }
+    console.log("[proxy] wisp server failed, trying", next);
+    try { sessionStorage.removeItem("gnWispActive"); } catch (e) {}
+    useWisp(next).then(
+      function () { tab.frame.go(tab.url); },
+      function () { maybeFallback(tab); }
+    );
   }
 
   // per-tab history so back/forward walk the proxied site, not the joint
@@ -415,6 +471,7 @@
   // one takes effect without a reload.
   window.__setWisp = function (url) {
     if (!url) return;
+    try { sessionStorage.removeItem("gnWispActive"); } catch (e) {}
     useWisp(url).then(null, function () {});
   };
 
