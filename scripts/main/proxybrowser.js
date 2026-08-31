@@ -411,6 +411,13 @@
     useWisp(url).then(null, function () {});
   };
 
+  // teardown recovery isn't always announced — a SharedWorker restart can be
+  // silent, or the refreshPort broadcast can be missed, and the sw then relays a
+  // fresh empty worker to itself. so poll: if the transport has gone missing (or
+  // the port died), wispLive() puts it back within a couple seconds, inside the
+  // service worker's retry window, so an in-page click survives a teardown.
+  setInterval(function () { wispLive(); }, 2000);
+
   // the chrome and the local new tab page don't need the tunnel, so they go up
   // immediately; only the navigation itself waits.
   var q = new URLSearchParams(location.search).get("q");
