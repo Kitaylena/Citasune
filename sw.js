@@ -144,18 +144,19 @@ async function handleRequest(event) {
     ok = await waitForConfig(scramjet);
   }
   if (ok && scramjet.route(event)) {
-    // fetch() rejects rather than throwing, so it has to be awaited inside the
-    // try for the fallback below to catch anything at all. a missing transport
-    // is transient (see note above) — retry it; anything else falls through.
+    // a missing transport is transient (see note above): the page re-sets it
+    // within a couple seconds. scramjet doesn't throw on it though — it resolves
+    // with a 500 error page — so retry on either a rejection or a 500 until the
+    // transport comes back, then return whatever we last got.
     const deadline = Date.now() + TRANSPORT_WAIT;
     for (;;) {
+      let resp = null;
       try {
-        return await scramjet.fetch(event);
-      } catch (e) {
-        const msg = String((e && (e.message || e.cause)) || e || "");
-        if (!/bare client|baretransport|no transport/i.test(msg) || Date.now() > deadline) break;
-        await new Promise((r) => setTimeout(r, TRANSPORT_POLL));
-      }
+        resp = await scramjet.fetch(event);
+      } catch (e) {}
+      if (resp && resp.status !== 500) return resp;
+      if (Date.now() > deadline) return resp || fetch(event.request);
+      await new Promise((r) => setTimeout(r, TRANSPORT_POLL));
     }
   }
   return fetch(event.request);

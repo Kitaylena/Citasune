@@ -169,7 +169,10 @@
   var sjReady = swReady.then(init);
 
   // needs neither the service worker nor scramjet, so it runs alongside them
-  var wispReady = useWisp(wispUrl());
+  var wispReady = useWisp(wispUrl()).then(
+    function () { console.log("[proxy] transport set:", wispUrl()); },
+    function (e) { console.error("[proxy] setTransport failed:", e); }
+  );
 
   var ready = Promise.all([sjReady, wispReady]);
   var isReady = false, failed = false;
