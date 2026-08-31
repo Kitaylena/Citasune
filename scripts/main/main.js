@@ -431,7 +431,7 @@ const wispServers = [
   { name: "motor-cycle-part.org — 512ms", url: "wss://motor-cycle-part.org" },
   { name: "truf.the-nest.at — 534ms", url: "wss://truf.the-nest.at" },
   { name: "mages.io — 539ms", url: "wss://mages.io" },
-  { name: "lichology.com — 551ms", url: "wss://lichology.com " },
+  { name: "lichology.com — 551ms", url: "wss://lichology.com" },
   { name: "thoughts.forwardersoft.com — 552ms", url: "wss://thoughts.forwardersoft.com" },
   { name: "definitelyscience.com — 555ms", url: "wss://definitelyscience.com" },
   { name: "area.forwardersoft.com — 580ms", url: "wss://area.forwardersoft.com" },
@@ -448,6 +448,8 @@ const DEFAULT_WISP = wispServers[0].url;
 
 function setWisp(url) {
   url = (url || "").trim() || DEFAULT_WISP;
+  // libcurl-transport needs a trailing slash on the wisp url
+  if (!/\/$/.test(url)) url += "/";
   try { localStorage.setItem("gnWisp", url); } catch (e) {}
   if (typeof window.__setWisp === "function") window.__setWisp(url);
   const box = document.getElementById("wispCustom");

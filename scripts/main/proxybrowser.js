@@ -18,7 +18,7 @@
   }
 
   var TRANSPORT = "/libcurl/index.js";
-  var FALLBACK_WISP = "wss://us-east.wisp.q13x.com";
+  var FALLBACK_WISP = "wss://us-east.wisp.q13x.com/";
   var NEWTAB = "/pages/newtab.html";
   var DEFAULT_SEARCH = "https://duckduckgo.com/?q=%s";
 
@@ -44,6 +44,10 @@
   var conn = new BareMux.BareMuxConnection("/baremux/worker.js");
 
   function useWisp(url) {
+    // libcurl-transport rejects a wisp url with stray whitespace or without a
+    // trailing slash, so normalize both here — the one place every server flows.
+    url = (url || "").trim();
+    if (url && !/\/$/.test(url)) url += "/";
     return conn.setTransport(TRANSPORT, [{ websocket: url }]);
   }
 
