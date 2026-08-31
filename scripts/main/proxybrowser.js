@@ -18,7 +18,7 @@
   }
 
   var TRANSPORT = "/libcurl/index.js";
-  var FALLBACK_WISP = "wss://wisp.rhw.one/wisp/";
+  var FALLBACK_WISP = "wss://gay.ajswags.xyz/";
   var NEWTAB = "/pages/newtab.html";
   var DEFAULT_SEARCH = "https://duckduckgo.com/?q=%s";
 

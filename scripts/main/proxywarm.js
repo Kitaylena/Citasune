@@ -9,7 +9,7 @@
 // whatever is configured (wispServers in main.js, default us-east) and users
 // switch from proxy settings if that one is slow or blocked for them.
 (function () {
-  var FALLBACK_WISP = "wss://us-east.wisp.q13x.com/";
+  var FALLBACK_WISP = "wss://gay.ajswags.xyz/";
 
   // assets the proxy page needs, warmed into the http cache ahead of time
   var ASSETS = [
