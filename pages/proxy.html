@@ -118,8 +118,10 @@
       inset: 0;
       z-index: 5;
       display: none;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 0.6rem;
       padding: 1.5rem;
       text-align: center;
       background: rgba(11, 12, 13, 0.92);
@@ -130,6 +132,13 @@
       animation: sj-glow 1.4s ease-in-out infinite;
     }
     #sj-status.on { display: flex; }
+    #sj-status .sj-sub {
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      color: #9aa;
+      font-family: ui-monospace, monospace;
+    }
     @keyframes sj-glow {
       0%, 100% { opacity: 0.65; text-shadow: 0 0 6px rgba(250, 250, 250, 0.35); }
       50% {

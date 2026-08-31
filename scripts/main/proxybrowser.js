@@ -208,10 +208,25 @@
   var CONNECTING_MSG = "connecting…";
   var SWITCHING_MSG = "switching servers to find one that is available to you..";
 
-  function showStatus(on, msg) {
+  function showStatus(on, msg, sub) {
     if (!elStatus) return;
-    if (on) elStatus.textContent = msg || CONNECTING_MSG;
+    if (on) {
+      elStatus.textContent = "";
+      var m = document.createElement("div");
+      m.textContent = msg || CONNECTING_MSG;
+      elStatus.appendChild(m);
+      if (sub) {
+        var s = document.createElement("div");
+        s.className = "sj-sub";
+        s.textContent = sub;
+        elStatus.appendChild(s);
+      }
+    }
     elStatus.classList.toggle("on", !!on);
+  }
+
+  function serverLabel(u) {
+    return (u || "").replace(/^wss?:\/\//i, "").replace(/\/$/, "");
   }
 
   // nothing may hit the network before scramjet's client is up, so navigations
@@ -393,26 +408,33 @@
     if (tab.isNew || !tab.url) return;
     var active = tab.id === activeId;
     if (!isErrorPage(tab.iframe)) {
+      if (tab.tried && tab.tried.length && currentServer) {
+        console.log("%c[proxy] connected via " + serverLabel(currentServer), "color:#5f5");
+      }
       tab.tried = null;
       if (currentServer) { try { sessionStorage.setItem("gnWispActive", currentServer); } catch (e) {} }
       if (active) showStatus(false);
       return;
     }
-    if (!tab.tried) tab.tried = [];
-    if (currentServer && tab.tried.indexOf(currentServer) === -1) tab.tried.push(currentServer);
     var list = serverList();
+    if (!tab.tried) {
+      tab.tried = [];
+      console.log("[proxy] switching servers — will try (" + list.length + "): " + list.map(serverLabel).join(", "));
+    }
+    if (currentServer && tab.tried.indexOf(currentServer) === -1) tab.tried.push(currentServer);
     var next = null;
     for (var i = 0; i < list.length; i++) {
       if (tab.tried.indexOf(list[i]) === -1) { next = list[i]; break; }
     }
     if (!next) {
-      console.warn("[proxy] all wisp servers failed for", tab.url);
+      console.warn("[proxy] all " + list.length + " wisp servers failed for " + tab.url);
       if (active) showStatus(false);
       return;
     }
     tab.tried.push(next);
-    console.log("[proxy] wisp server failed, trying", next);
-    if (active) showStatus(true, SWITCHING_MSG);
+    console.log("[proxy] " + serverLabel(currentServer || "server") + " failed → trying " +
+      serverLabel(next) + " (" + tab.tried.length + "/" + list.length + ")");
+    if (active) showStatus(true, SWITCHING_MSG, serverLabel(next));
     try { sessionStorage.removeItem("gnWispActive"); } catch (e) {}
     useWisp(next).then(
       function () { tab.frame.go(tab.url); },
