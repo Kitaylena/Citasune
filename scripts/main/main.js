@@ -425,7 +425,8 @@ document.addEventListener("keydown", (e) => {
 // are rough round-trip averages measured when the list was compiled, not a
 // promise — pick whatever actually feels fastest where you are.
 const wispServers = [
-  { name: "us-east (default)", url: "wss://us-east.wisp.q13x.com" },
+  { name: "ajswags (default)", url: "wss://gay.ajswags.xyz/" },
+  { name: "us-east", url: "wss://us-east.wisp.q13x.com" },
   { name: "nebulaproxy.io — 472ms", url: "wss://nebulaproxy.io" },
   { name: "invisiproxy.com — 497ms", url: "wss://invisiproxy.com" },
   { name: "motor-cycle-part.org — 512ms", url: "wss://motor-cycle-part.org" },

@@ -25,6 +25,7 @@
   // servers to fall through when the configured one can't reach a site, ordered
   // most-reliable first so a dead primary lands on a working one quickly.
   var WISP_FALLBACKS = [
+    "wss://gay.ajswags.xyz/",
     "wss://wisp.rhw.one/wisp/",
     "wss://fern.best/wisp/",
     "wss://glseries.net/wisp/",
