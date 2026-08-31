@@ -70,15 +70,32 @@
   // share the check so a restart can't fan out into a transport per navigation.
   var live = null;
 
+  function withTimeout(p, ms) {
+    return Promise.race([
+      p,
+      new Promise(function (_, rej) { setTimeout(function () { rej(new Error("timeout")); }, ms); }),
+    ]);
+  }
+
+  // after a SharedWorker restart our port is dead: getTransport() can hang and
+  // setTransport() can post into the void. a fresh connection re-acquires a live
+  // port to the current worker, so recreate it whenever the old one misbehaves.
+  function freshConn() {
+    try { conn = new BareMux.BareMuxConnection("/baremux/worker.js"); } catch (e) {}
+  }
+
   function wispLive() {
     if (live) return live;
     live = (async function () {
       try {
-        if (await conn.getTransport()) return;
-      } catch (e) {}
+        if (await withTimeout(conn.getTransport(), 1500)) return;
+      } catch (e) { freshConn(); }
       try {
         await useWisp(wispUrl());
-      } catch (e) {}
+      } catch (e) {
+        freshConn();
+        try { await useWisp(wispUrl()); } catch (e2) {}
+      }
     })();
     var clear = function () { live = null; };
     live.then(clear, clear);

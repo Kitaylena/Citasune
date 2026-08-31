@@ -9,6 +9,13 @@ const PREFIX = "/scramjet/";
 const CONFIG_WAIT = 5000;
 const CONFIG_POLL = 50;
 
+// the transport lives in the bare-mux SharedWorker, which the browser can tear
+// down; our own request can restart it empty, so bare-mux answers "there are no
+// bare clients" before the page re-sets the transport. retry briefly so a
+// teardown is a stall the page recovers from, not a failed navigation.
+const TRANSPORT_WAIT = 4000;
+const TRANSPORT_POLL = 120;
+
 const DB_NAME = "$scramjet";
 const DB_VERSION = 1;
 const DB_STORES = [
@@ -136,12 +143,20 @@ async function handleRequest(event) {
   if (!ok && event.request.url.startsWith(location.origin + PREFIX)) {
     ok = await waitForConfig(scramjet);
   }
-  if (ok) {
+  if (ok && scramjet.route(event)) {
     // fetch() rejects rather than throwing, so it has to be awaited inside the
-    // try for the fallback below to catch anything at all.
-    try {
-      if (scramjet.route(event)) return await scramjet.fetch(event);
-    } catch (e) {}
+    // try for the fallback below to catch anything at all. a missing transport
+    // is transient (see note above) — retry it; anything else falls through.
+    const deadline = Date.now() + TRANSPORT_WAIT;
+    for (;;) {
+      try {
+        return await scramjet.fetch(event);
+      } catch (e) {
+        const msg = String((e && (e.message || e.cause)) || e || "");
+        if (!/bare client|baretransport|no transport/i.test(msg) || Date.now() > deadline) break;
+        await new Promise((r) => setTimeout(r, TRANSPORT_POLL));
+      }
+    }
   }
   return fetch(event.request);
 }
