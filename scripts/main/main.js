@@ -420,12 +420,50 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-const DEFAULT_WISP = "wss://us-east.wisp.q13x.com";
+// wisp servers. the first is the default; the rest are alternatives users can
+// switch to from settings if the default is slow or blocked for them. the times
+// are rough round-trip averages measured when the list was compiled, not a
+// promise — pick whatever actually feels fastest where you are.
+const wispServers = [
+  { name: "us-east (default)", url: "wss://us-east.wisp.q13x.com" },
+  { name: "nebulaproxy.io — 472ms", url: "wss://nebulaproxy.io" },
+  { name: "invisiproxy.com — 497ms", url: "wss://invisiproxy.com" },
+  { name: "motor-cycle-part.org — 512ms", url: "wss://motor-cycle-part.org" },
+  { name: "truf.the-nest.at — 534ms", url: "wss://truf.the-nest.at" },
+  { name: "mages.io — 539ms", url: "wss://mages.io" },
+  { name: "lichology.com — 551ms", url: "wss://lichology.com " },
+  { name: "thoughts.forwardersoft.com — 552ms", url: "wss://thoughts.forwardersoft.com" },
+  { name: "definitelyscience.com — 555ms", url: "wss://definitelyscience.com" },
+  { name: "area.forwardersoft.com — 580ms", url: "wss://area.forwardersoft.com" },
+  { name: "english.algebra…forwardersoft.com — 582ms", url: "wss://english.algebra.teacher.vocabulary.homework.forwardersoft.com" },
+  { name: "wisp.terbiumon.top", url: "wss://wisp.terbiumon.top" },
+  { name: "eu-central", url: "wss://eu-central.wisp.q13x.com" },
+  { name: "se-asia", url: "wss://se-asia.wisp.q13x.com" },
+  { name: "anura.pro", url: "wss://anura.pro/" },
+  { name: "glseries.net", url: "wss://glseries.net" },
+  { name: "wisp.rhw.one", url: "wss://wisp.rhw.one" },
+  { name: "fern.best", url: "wss://fern.best" },
+];
+const DEFAULT_WISP = wispServers[0].url;
 
 function setWisp(url) {
   url = (url || "").trim() || DEFAULT_WISP;
   try { localStorage.setItem("gnWisp", url); } catch (e) {}
   if (typeof window.__setWisp === "function") window.__setWisp(url);
+  const box = document.getElementById("wispCustom");
+  if (box && box.value.trim() !== url) box.value = url;
+  const sel = document.getElementById("wispSelect");
+  if (sel) sel.value = wispServers.some((s) => s.url === url) ? url : "custom";
+}
+
+// "custom…" isn't a server, it just hands the user over to the text box
+function pickWisp(value) {
+  if (value === "custom") {
+    const box = document.getElementById("wispCustom");
+    if (box) { box.focus(); box.select(); }
+    return;
+  }
+  setWisp(value);
 }
 
 const searchEngines = [
@@ -461,6 +499,11 @@ function openSettings() {
   const searchOpts = searchEngines.map((s) =>
     `<option value="${s.url}"${s.url === curSearch ? " selected" : ""}>${s.name}</option>`
   ).join("");
+
+  const known = wispServers.some((s) => s.url === curWisp);
+  const wispOpts = wispServers.map((s) =>
+    `<option value="${s.url}"${s.url === curWisp ? " selected" : ""}>${s.name}</option>`
+  ).join("") + `<option value="custom"${known ? "" : " selected"}>custom…</option>`;
 
   const swatches = themes.map((t) =>
     `<button class="theme-swatch${t.rgb === curAccent ? " active" : ""}" data-rgb="${t.rgb}" style="background: rgb(${t.rgb})" title="${t.name}" onclick="setTheme('${t.rgb}', '${t.bg}')"></button>`
@@ -525,7 +568,11 @@ function openSettings() {
     </div>
     <div class="settings-row">
       <label>wisp server</label>
-      <input type="text" class="settings-input" value="${curWisp}" onchange="setWisp(this.value)" placeholder="wss://us-east.wisp.q13x.com">
+      <select id="wispSelect" class="settings-select" onchange="pickWisp(this.value)">${wispOpts}</select>
+    </div>
+    <div class="settings-row">
+      <label>or a custom one</label>
+      <input id="wispCustom" type="text" class="settings-input" value="${curWisp}" onchange="setWisp(this.value)" placeholder="${DEFAULT_WISP}">
     </div>
   `);
 }
