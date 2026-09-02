@@ -310,7 +310,6 @@ function setGlass(on) {
   if (toggle) toggle.classList.toggle("on", on);
 }
 
-// open the current site inside an about:blank tab (cloak), then send this tab away
 function openInBlank() {
   const url = window.location.href;
   const win = window.open("about:blank", "_blank");
@@ -325,7 +324,6 @@ function openInBlank() {
   iframe.src = url;
   win.document.body.style.margin = "0";
   win.document.body.appendChild(iframe);
-  // leave the original tab on a harmless page
   window.location.replace("https://www.google.com");
 }
 
@@ -338,7 +336,7 @@ function setAutoBlank(on) {
 function maybeAutoBlank() {
   try {
     if (localStorage.getItem("gnAutoBlank") !== "on") return;
-    if (window.self !== window.top) return; // already inside the cloak iframe
+    if (window.self !== window.top) return;
     if (sessionStorage.getItem("gnBlanked")) return;
     sessionStorage.setItem("gnBlanked", "1");
     openInBlank();
@@ -420,10 +418,6 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// wisp servers. the first is the default; the rest are alternatives users can
-// switch to from settings if the default is slow or blocked for them. the times
-// are rough round-trip averages measured when the list was compiled, not a
-// promise — pick whatever actually feels fastest where you are.
 const wispServers = [
   { name: "ajswags (default)", url: "wss://gay.ajswags.xyz/" },
   { name: "us-east", url: "wss://us-east.wisp.q13x.com" },
@@ -449,10 +443,8 @@ const DEFAULT_WISP = wispServers[0].url;
 
 function setWisp(url) {
   url = (url || "").trim() || DEFAULT_WISP;
-  // libcurl-transport needs a trailing slash on the wisp url
   if (!/\/$/.test(url)) url += "/";
   try { localStorage.setItem("gnWisp", url); } catch (e) {}
-  // a manual choice overrides any server a fallback had cached this session
   try { sessionStorage.removeItem("gnWispActive"); } catch (e) {}
   if (typeof window.__setWisp === "function") window.__setWisp(url);
   const box = document.getElementById("wispCustom");
@@ -461,7 +453,6 @@ function setWisp(url) {
   if (sel) sel.value = wispServers.some((s) => s.url === url) ? url : "custom";
 }
 
-// "custom…" isn't a server, it just hands the user over to the text box
 function pickWisp(value) {
   if (value === "custom") {
     const box = document.getElementById("wispCustom");

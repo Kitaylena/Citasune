@@ -247,7 +247,12 @@ async function initDisplay() {
       showStageMessage("game not found.", true);
       return;
     }
-    document.title = file.name + " - Citasune";
+    
+    var cloak = null;
+    try { cloak = localStorage.getItem("gnCloak"); } catch (e) {}
+    if (!cloak || cloak === "None") {
+      document.title = file.name + " - Citasune";
+    }
     recordPlay(file.id);
     fillInfo(file);
     loadZone(file);
