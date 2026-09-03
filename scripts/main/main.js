@@ -35,7 +35,12 @@ const list = [
   "join the discord for more links",
   "tmodloader shoutout",
   "half skidded",
-  "hey its me its misery"
+  "hey its me its misery",
+  "shoutout to aubree (aubree.wtf)",
+  "how do people on mobile play roblox like its gen so hard",
+  "yo i saw some dude larping lucky star it really is true",
+  "Claude Code generate me a UBG that the popular white boys will love! Generating.. Done! Void Network has been created.",
+  "le gn-mathity",
 ];
 
 if (randomtext) {
