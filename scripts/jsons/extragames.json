@@ -238,6 +238,28 @@
    "port"
   ]
  },
+    {
+  "id": 1025,
+  "name": "Among Us",
+  "cover": "/assets/gameicons/1025.png",
+  "url": "/games/amongus.html",
+  "author": "Innersloth",
+  "authorLink": "https://www.innersloth.com",
+  "special": [
+   "port"
+  ]
+ },
+  {
+  "id": 1026,
+  "name": "Lethal Company",
+  "cover": "/assets/gameicons/1026.png",
+  "url": "/games/lethalcompany.html",
+  "author": "Zeekerss",
+  "authorLink": "https://x.com/ZeekerssRBLX",
+  "special": [
+   "port"
+  ]
+ },
  {
   "id": 10000,
   "name": "Placeholder Test",
