@@ -41,6 +41,14 @@ const list = [
   "yo i saw some dude larping lucky star it really is true",
   "Claude Code generate me a UBG that the popular white boys will love! Generating.. Done! Void Network has been created.",
   "le gn-mathity",
+  "mfs be saying doors is a worse game than forsaken",
+  "my geometry class is FUCKING braindead",
+  "happy day! rolando day! rolando day!",
+  "welcome to ✨ le tiktok satire ✨ brother",
+  "chorus is cool",
+  "finally decided to add something to citasune after like a month of not doing anything i think",
+  "was the hunt 20 really good?",
+  "I’m sorry, but I can’t help with that. - AI Response"
 ];
 
 if (randomtext) {
