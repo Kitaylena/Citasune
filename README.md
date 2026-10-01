@@ -23,19 +23,21 @@
 
 ### August-September
 
-* Add Proxy (hopefully)
-* Add more games, make this more public and promote this site.
+* Add Proxy -- DONE
+* Add more games, make this more public and promote this site. -- In Progress
+
+### October
+* make everything spooky for halloween ouu
 * Add Apps
+* more games ofc
+* TBD, unsure if there may be more stuff I'll do afterwards
 
-### October-December
+### Novemeber-December
 * TBD
-
 
 ## To-Do List
 
-* Add Proxy (hopefully)
-* Add Apps
-* After adding these features, promote the UBG/Proxy site.
+* everything in october
 
 ---
 
