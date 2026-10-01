@@ -32,7 +32,7 @@
 * more games ofc
 * TBD, unsure if there may be more stuff I'll do afterwards
 
-### Novemeber-December
+### November-December
 * TBD
 
 ## To-Do List
