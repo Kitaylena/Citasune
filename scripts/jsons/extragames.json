@@ -238,7 +238,7 @@
    "port"
   ]
  },
-    {
+ {
   "id": 1025,
   "name": "Among Us",
   "cover": "/assets/gameicons/1025.png",
@@ -248,25 +248,5 @@
   "special": [
    "port"
   ]
- },
-  {
-  "id": 1026,
-  "name": "Lethal Company",
-  "cover": "/assets/gameicons/1026.png",
-  "url": "/games/lethalcompany.html",
-  "author": "Zeekerss",
-  "authorLink": "https://x.com/ZeekerssRBLX",
-  "special": [
-   "port"
-  ]
- },
- {
-  "id": 10000,
-  "name": "Placeholder Test",
-  "cover": "/assets/imageassets/placeholder.jpg",
-  "url": "/games/placeholdertest.html",
-  "author": "Citasune, THIS IS MAINLY TO SEE IF EXTRAGAMES.JSON WORKS.",
-  "authorLink": "",
-  "special": []
  }
 ]

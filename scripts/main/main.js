@@ -48,7 +48,9 @@ const list = [
   "chorus is cool",
   "finally decided to add something to citasune after like a month of not doing anything i think",
   "was the hunt 20 really good?",
-  "I’m sorry, but I can’t help with that. - AI Response"
+  "I’m sorry, but I can’t help with that. - AI Response",
+  "ITS OCTOBER!!",
+  "ITS HALLOWEEN MONTH OH MY GOSHHH",
 ];
 
 if (randomtext) {
@@ -65,6 +67,83 @@ const listforcharacters = [
 
 if (randomcharacter) {
   randomcharacter.src = listforcharacters[Math.floor(Math.random() * listforcharacters.length)];
+}
+
+const halloweennotice = localStorage.getItem("halloweennotice");
+
+if (!halloweennotice) {
+  localStorage.setItem("halloweennotice", "1");
+
+  const cutsceneStyle = document.createElement("style");
+  cutsceneStyle.textContent = `
+    .halloween-cutscene-overlay {
+      position: fixed;
+      inset: 0;
+      background: #05020a;
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      transition: opacity 0.8s ease-in-out;
+      pointer-events: all;
+    }
+    .halloween-cutscene-overlay.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .cutscene-pumpkin {
+      font-size: 5rem;
+      animation: pumpkinPop 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, pumpkinGlow 2s infinite ease-in-out 1.2s;
+    }
+    .cutscene-text {
+      color: #ff7518;
+      font-family: var(--app-font, sans-serif);
+      font-size: 2rem;
+      font-weight: bold;
+      margin-top: 15px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: textSlideUp 0.8s ease-out forwards 0.5s;
+      text-shadow: 0 0 15px rgba(255, 117, 24, 0.6);
+    }
+    @keyframes pumpkinPop {
+      0% { opacity: 0; transform: scale(0.3) rotate(-20deg); }
+      70% { transform: scale(1.15) rotate(5deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+    @keyframes pumpkinGlow {
+      0%, 100% { filter: drop-shadow(0 0 15px rgba(255, 117, 24, 0.7)); transform: scale(1); }
+      50% { filter: drop-shadow(0 0 35px rgba(255, 117, 24, 1)); transform: scale(1.05); }
+    }
+    @keyframes textSlideUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+  `;
+  document.head.appendChild(cutsceneStyle);
+
+  const overlay = document.createElement("div");
+  overlay.className = "halloween-cutscene-overlay";
+  overlay.innerHTML = `
+    <div class="cutscene-pumpkin"><img src="/assets/imageassets/CitasuneIcon.png" alt="Pumpkin" style="width: 124px; height: auto;" /></div>
+    <div class="cutscene-text">- 🎃 spooky season has arrived! 🎃 -</div>
+  `;
+  document.body.appendChild(overlay);
+
+  setTimeout(() => {
+    overlay.classList.add("fade-out");
+    setTimeout(() => {
+      overlay.remove();
+      cutsceneStyle.remove();
+      createpopup(`
+        <h2 style="margin-bottom: 10px;">Happy Halloween!</h2>
+        <p style="margin-bottom: 15px;">happy halloween month! theme has changed to celebrate october!</p>
+        <p style="margin-bottom: 10px;">if you want to disable this theme, go to settings and switch to the "Original" theme.</p>
+        <p style="margin-bottom: 10px;">enjoy citasune!</p>
+      `);
+    }, 800);
+  }, 4000);
 }
 
 //main title still, just dmca popup or whatever
@@ -100,42 +179,65 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("particleCanvas");
   if (!canvas) return;
+
   const reduceMotion =
     window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduceMotion) {
     canvas.style.display = "none";
     return;
   }
+
   const ctx = canvas.getContext("2d");
   let particles = [];
   let w = 0, h = 0;
+  let accentRgb = "255, 117, 24";
+
+  function updateAccentColor() {
+    const computed = getComputedStyle(document.documentElement)
+      .getPropertyValue("--accent-rgb")
+      .trim();
+    if (computed) accentRgb = computed;
+  }
+
+  const observer = new MutationObserver(() => updateAccentColor());
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["style", "class", "data-theme"]
+  });
+
+  window.addEventListener("themechange", updateAccentColor);
 
   function resizeCanvas() {
     w = canvas.width = window.innerWidth;
     h = canvas.height = window.innerHeight;
+    updateAccentColor();
   }
   resizeCanvas();
   window.addEventListener("resize", resizeCanvas);
 
-  const particleCount = Math.max(15, Math.min(40, Math.round(window.innerWidth / 45)));
+  const particleCount = Math.max(15, Math.min(50, Math.round(window.innerWidth / 35)));
 
   class Particle {
     constructor() { this.reset(true); }
     reset(anywhere) {
       this.x = Math.random() * w;
       this.y = anywhere ? Math.random() * h : h + 10;
-      this.size = Math.random() * 2 + 0.5;
+      this.size = Math.random() * 2.5 + 0.5;
       this.speedY = (Math.random() * 0.4 + 0.1) * 60;
       this.speedX = (Math.random() * 0.2 - 0.1) * 60;
-      this.opacity = Math.random() * 0.5 + 0.1;
+      this.opacity = Math.random() * 0.6 + 0.1;
+      this.flickerSpeed = Math.random() * 0.003 + 0.001;
+      this.driftOffset = Math.random() * Math.PI * 2;
     }
     update(dt) {
       this.y -= this.speedY * dt;
-      this.x += this.speedX * dt;
+      this.x += Math.sin(this.y * 0.01 + this.driftOffset) * 0.3 + this.speedX * dt;
+      this.opacity += Math.sin(Date.now() * this.flickerSpeed) * 0.005;
+      this.opacity = Math.max(0.08, Math.min(0.75, this.opacity));
       if (this.y < -10 || this.x < -10 || this.x > w + 10) this.reset(false);
     }
     draw() {
-      ctx.fillStyle = "rgba(255, 255, 255, " + this.opacity + ")";
+      ctx.fillStyle = "rgba(" + accentRgb + ", " + this.opacity + ")";
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
       ctx.fill();
@@ -184,10 +286,6 @@ function siteURL(p) {
 }
 
 function goto(url) {
-  if (url == "./proxy.html") {
-    alert("Proxy is disabled for the time being..");
-    return;
-  }
   window.location.href = siteURL(url);
 }
 
@@ -248,11 +346,14 @@ function discord() {
     `);
 }
 // settings
-const defaultaccent = "0, 243, 255";
-const defaultbg= "#0b0c0d";
+const defaultaccent = "231, 109, 44";
+const defaultbg = "#120a1a";
 const defaultfont = "'thenormalfontorsmth', sans-serif";
 const themes = [
-  { name: "Default", rgb: "0, 243, 255", bg: "#0b0c0d" },
+  // { name: "Default", rgb: "0, 243, 255", bg: "#0b0c0d" },
+  { name: "Default", rgb: "255, 117, 24", bg: "#0d0614", "card-bg": "rgba(255, 117, 24, 0.05)", "card-border": "rgba(255, 117, 24, 0.18)", "panel-bg": "rgba(24, 12, 36, 0.75)", "text-primary": "#ffffff", "text-secondary": "rgba(255, 255, 255, 0.85)", "text-muted": "rgba(255, 255, 255, 0.5)" },
+  // { name: "Halloween", rgb: "255, 117, 24", bg: "#0d0614", "card-bg": "rgba(255, 117, 24, 0.05)", "card-border": "rgba(255, 117, 24, 0.18)", "panel-bg": "rgba(24, 12, 36, 0.75)", "text-primary": "#ffffff", "text-secondary": "rgba(255, 255, 255, 0.85)", "text-muted": "rgba(255, 255, 255, 0.5)" },
+  { name: "Original", rgb: "0, 243, 255", bg: "#0b0c0d" },
   { name: "Ocean", rgb: "56, 189, 248", bg: "#0a1420" },
   { name: "Forest", rgb: "74, 222, 128", bg: "#0b140f" },
   { name: "Sunset", rgb: "251, 146, 60", bg: "#1a0f0a" },
@@ -291,6 +392,7 @@ function applySavedSettings() {
     }
   } catch (e) {}
 }
+
 function setTheme(rgb, bg) {
   document.documentElement.style.setProperty("--accent-rgb", rgb);
   if (bg) document.documentElement.style.setProperty("--bg", bg);
@@ -302,6 +404,7 @@ function setTheme(rgb, bg) {
     s.classList.toggle("active", s.dataset.rgb === rgb)
   );
 }
+
 function setAccentHex(hex) {
   const rgb = hexToRgb(hex);
   document.documentElement.style.setProperty("--accent-rgb", rgb);

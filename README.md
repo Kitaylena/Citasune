@@ -27,7 +27,7 @@
 * Add more games, make this more public and promote this site. -- In Progress
 
 ### October
-* make everything spooky for halloween ouu
+* make everything spooky for halloween ouu -- DONE
 * Add Apps
 * more games ofc
 * TBD, unsure if there may be more stuff I'll do afterwards
