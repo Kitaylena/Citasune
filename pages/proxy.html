@@ -132,6 +132,50 @@
       animation: sj-glow 1.4s ease-in-out infinite;
     }
     #sj-status.on { display: flex; }
+    @font-face { font-family: Citasune; src: url('/style/Questrial-Regular.ttf') format('truetype'); font-display: swap; }
+    #sj-settings { min-width: 44px; min-height: 36px; }
+    #sj-settings svg { display: block; width: 18px; height: 18px; }
+    #sj-settings:focus-visible { outline: 2px solid #c6b8f5; outline-offset: 3px; }
+    #sj-bar { position: relative; }
+    #sj-bar #sj-settings[aria-expanded="true"] { background: rgba(var(--accent-rgb, 231, 109, 44), 0.18); border-color: rgba(var(--accent-rgb, 231, 109, 44), 0.5); }
+    #sj-transport-menu {
+      --transport-accent: var(--accent-rgb, 231, 109, 44);
+      --transport-muted: #9aa;
+      position: absolute; top: calc(100% + 8px); right: 10px; z-index: 30;
+      width: min(340px, calc(100vw - 20px));
+      padding: 1.1rem 1.25rem 1.15rem;
+      background: #141416; color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      font: 14px/1.5 system-ui, sans-serif;
+      transform-origin: top right;
+      animation: transport-menu-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #sj-transport-menu[hidden] { display: none; }
+    @keyframes transport-menu-in { from { opacity: 0; transform: translateY(-8px) scale(0.98); } to { opacity: 1; transform: none; } }
+    #sj-transport-title { font-size: 0.95rem; font-weight: 600; color: var(--transport-muted); border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.3rem; }
+    #sj-transport-menu .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0.9rem 0 0.6rem; }
+    #sj-transport-menu .settings-row label { font-weight: 600; }
+    #sj-transport-menu .settings-select { background: #1e2024; color: #fff; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 6px 10px; font-family: inherit; font-size: inherit; cursor: pointer; }
+    #sj-transport-menu .settings-select option { background: #1e2024; color: #fff; }
+    #sj-transport-menu .settings-select:hover { border-color: rgba(var(--transport-accent), 0.5); }
+    #sj-transport-menu .settings-select:focus-visible { outline: 2px solid #c6b8f5; outline-offset: 2px; }
+    #sj-transport-menu .settings-select:disabled { opacity: 0.55; cursor: wait; }
+    #sj-transport-menu .transport-hint, #sj-transport-menu .transport-active, #proxyTransportStatus { font-size: 0.85rem; color: var(--transport-muted); }
+    #sj-transport-menu .transport-active { display: flex; align-items: center; gap: 8px; margin-top: 0.7rem; }
+    #sj-transport-menu .transport-active::before { content: ""; flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%; background: #c6b8f5; box-shadow: 0 0 0 3px rgba(198, 184, 245, 0.18); }
+    #sj-transport-menu .transport-active[data-state="ready"]::before { background: #7ddba0; box-shadow: 0 0 0 3px rgba(125, 219, 160, 0.18); }
+    #sj-transport-menu .transport-active[data-state="pending"]::before { background: #f0c36b; box-shadow: 0 0 0 3px rgba(240, 195, 107, 0.18); }
+    #proxyTransportStatus { margin-top: 0.5rem; }
+    #proxyTransportStatus:empty { display: none; }
+    #proxyTransportStatus[data-state="error"] { color: #ffb8b0; }
+    #proxyTransportStatus[data-state="success"] { color: #9fe3b5; }
+    @media (max-width: 440px) {
+      #sj-transport-menu { left: 10px; right: 10px; width: auto; }
+      #sj-bar { gap: 4px; padding: 6px; }
+      #sj-addr { min-width: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) { #sj-status, #sj-transport-menu { animation: none; } }
     #sj-status .sj-sub {
       font-size: 0.85rem;
       font-weight: 500;
@@ -149,6 +193,7 @@
       }
     }
   </style>
+  <script src="/scripts/main/proxytransport.js?v=3"></script>
   <script src="/baremux/index.js" defer></script>
   <script src="/scram/scramjet.all.js" defer></script>
 </head>
@@ -163,7 +208,23 @@
     <form id="sj-addr">
       <input id="sj-addrinput" type="text" spellcheck="false" placeholder="enter url or search…">
     </form>
+    <button id="sj-settings" type="button" title="Connection settings" aria-label="Connection settings" aria-haspopup="true" aria-expanded="false" aria-controls="sj-transport-menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="currentColor" stroke="none"/><circle cx="15" cy="17" r="3" fill="currentColor" stroke="none"/></svg>
+    </button>
     <button id="sj-home" type="button" title="back to citasune (esc)"><img src="/assets/imageassets/CitasuneIcon.png" alt="citasune"></button>
+    <div id="sj-transport-menu" role="group" aria-labelledby="sj-transport-title" hidden>
+      <h2 id="sj-transport-title">proxy transport</h2>
+      <div class="settings-row">
+        <label for="sj-transport-select">preferred transport</label>
+        <select id="sj-transport-select" class="settings-select">
+          <option value="libcurl">libcurl</option>
+          <option value="epoxy">Epoxy</option>
+        </select>
+      </div>
+      <p class="transport-hint">libcurl is the default; try Epoxy if a site has connection issues. Changing it reloads the active page. Automatic fallback stays on.</p>
+      <p id="sj-transport-active" class="transport-active"></p>
+      <p id="proxyTransportStatus" role="status" aria-live="polite" aria-atomic="true"></p>
+    </div>
   </div>
   <div id="sj-views">
     <div id="sj-status">connecting…</div>
@@ -171,5 +232,6 @@
   <script src="/scripts/main/main.js" defer></script>
   <script src="/scripts/main/proxywarm.js" defer></script>
   <script src="/scripts/main/proxybrowser.js" defer></script>
+  <script src="/scripts/main/proxytransport-ui.js?v=3" defer></script>
 </body>
 </html>

@@ -675,6 +675,14 @@ function openSettings() {
 
     <h3 style="margin:1.4rem 0 0.4rem;">proxy</h3>
     <div class="settings-row">
+      <label for="proxyTransportSelect">preferred transport</label>
+      <select id="proxyTransportSelect" class="settings-select" onchange="window.CSProxyTransport.set(this.value)">
+        <option value="libcurl"${window.CSProxyTransport.get() === "libcurl" ? " selected" : ""}>libcurl</option>
+        <option value="epoxy"${window.CSProxyTransport.get() === "epoxy" ? " selected" : ""}>Epoxy</option>
+      </select>
+    </div>
+    <p id="settingsTransportStatus" role="status" style="font-size:0.85rem;">Automatic transport fallback remains enabled.</p>
+    <div class="settings-row">
       <label>search engine</label>
       <select class="settings-select" onchange="setSearchEngine(this.value)">${searchOpts}</select>
     </div>

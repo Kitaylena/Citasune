@@ -19,7 +19,8 @@
 
   var TRANSPORT = "/libcurl/index.js";
   var EPOXY_TRANSPORT = "/epoxy/index.mjs";
-  var currentTransport = TRANSPORT;
+  var currentTransport = window.CSProxyTransport && window.CSProxyTransport.get() === "epoxy"
+    ? EPOXY_TRANSPORT : TRANSPORT;
   var FALLBACK_WISP = "wss://wisp.rhw.one/wisp/";
   var NEWTAB = "/pages/newtab.html";
   var DEFAULT_SEARCH = "https://duckduckgo.com/?q=%s";
@@ -587,7 +588,8 @@
     var list = [initialServer].concat(serverList()).filter(function (u, i, all) {
       return all.indexOf(u) === i;
     });
-    var transports = [TRANSPORT, EPOXY_TRANSPORT];
+    var transports = currentTransport === EPOXY_TRANSPORT
+      ? [EPOXY_TRANSPORT, TRANSPORT] : [TRANSPORT, EPOXY_TRANSPORT];
     var key = function (server, transport) { return transport + "|" + server; };
     if (!tab.tried) tab.tried = [];
     var failedKey = key(initialServer, currentTransport);
@@ -698,12 +700,31 @@
     if (v) navigate(toUrl(v));
   });
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && document.activeElement !== elAddr) goHome();
+    if (e.key === "Escape" && document.activeElement !== elAddr && !document.querySelector("dialog[open], #sj-transport-menu:not([hidden])")) goHome();
   });
   window.addEventListener("message", onMessage);
 
   // main.js calls this when the wisp server is changed in settings, so the new
   // one takes effect without a reload.
+  window.__getProxyTransport = function () {
+    return currentTransport === EPOXY_TRANSPORT ? "epoxy" : "libcurl";
+  };
+
+  window.__setProxyTransport = async function (value) {
+    if (switchingTransport) throw new Error("A transport retry is in progress. Please try again shortly.");
+    switchingTransport = true;
+    try {
+      await sjReady;
+      await wispReady.catch(function () {});
+      await useWisp(wispUrl(), value === "epoxy" ? EPOXY_TRANSPORT : TRANSPORT);
+      tabs.forEach(function (tab) { tab.tried = null; });
+      settle(true);
+      withActive(function (tab) { if (!tab.isNew && tab.url) tab.frame.go(tab.url); });
+    } finally {
+      switchingTransport = false;
+    }
+  };
+
   window.__setWisp = function (url) {
     if (!url) return;
     try { sessionStorage.removeItem("gnWispActive"); } catch (e) {}
@@ -715,7 +736,11 @@
   // fresh empty worker to itself. so poll: if the transport has gone missing (or
   // the port died), wispLive() puts it back within a couple seconds, inside the
   // service worker's retry window, so an in-page click survives a teardown.
-  setInterval(function () { wispLive(); }, 2000);
+  setInterval(function () {
+    if (!switchingTransport) wispLive().catch(function (error) {
+      console.warn("[proxy] transport recovery failed:", error);
+    });
+  }, 2000);
 
   // the chrome and the local new tab page don't need the tunnel, so they go up
   // immediately; only the navigation itself waits.
