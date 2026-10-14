@@ -1,6 +1,6 @@
 (function () {
   if (!("serviceWorker" in navigator)) { location.href = "/index.html"; return; }
-  if (typeof $scramjetLoadController === "undefined") return;
+  if (typeof CS$dwKyisuKE3KfS4JY === "undefined") return;
   if (typeof BareMux === "undefined") return;
 
   // panic key also has to be caught inside the proxied iframes, since their
@@ -18,6 +18,8 @@
   }
 
   var TRANSPORT = "/libcurl/index.js";
+  var EPOXY_TRANSPORT = "/epoxy/index.mjs";
+  var currentTransport = TRANSPORT;
   var FALLBACK_WISP = "wss://wisp.rhw.one/wisp/";
   var NEWTAB = "/pages/newtab.html";
   var DEFAULT_SEARCH = "https://duckduckgo.com/?q=%s";
@@ -192,7 +194,7 @@
     return currentServer || (warm && warm.server()) || FALLBACK_WISP;
   }
 
-  var loaded = $scramjetLoadController();
+  var loaded = CS$dwKyisuKE3KfS4JY();
   var scramjet = new loaded.ScramjetController({
     prefix: "/scramjet/",
     files: {
@@ -209,8 +211,13 @@
     // trailing slash, so normalize both here — the one place every server flows.
     url = (url || "").trim();
     if (url && !/\/$/.test(url)) url += "/";
-    currentServer = url;
-    return conn.setTransport(TRANSPORT, [{ websocket: url }]);
+    var transport = arguments[1] || currentTransport;
+    if (!url) return Promise.reject(new Error("No Wisp server configured"));
+    var options = transport === EPOXY_TRANSPORT ? [{ wisp: url }] : [{ websocket: url }];
+    return withTimeout(conn.setTransport(transport, options), 8000).then(function () {
+      currentServer = url;
+      currentTransport = transport;
+    });
   }
 
   // the transport isn't held here — it lives in the bare-mux SharedWorker, and
@@ -225,7 +232,9 @@
   try {
     bus = new BroadcastChannel("bare-mux");
     bus.onmessage = function (e) {
-      if (e.data && e.data.type === "refreshPort") wispLive();
+      if (e.data && e.data.type === "refreshPort") {
+        wispLive().catch(function (error) { console.error("[proxy] transport recovery failed:", error); });
+      }
     };
   } catch (e) {}
 
@@ -237,10 +246,16 @@
   var live = null;
 
   function withTimeout(p, ms) {
-    return Promise.race([
-      p,
-      new Promise(function (_, rej) { setTimeout(function () { rej(new Error("timeout")); }, ms); }),
-    ]);
+    return new Promise(function (resolve, reject) {
+      var timer = setTimeout(function () { reject(new Error("Transport timed out")); }, ms);
+      Promise.resolve(p).then(function (value) {
+        clearTimeout(timer);
+        resolve(value);
+      }, function (error) {
+        clearTimeout(timer);
+        reject(error);
+      });
+    });
   }
 
   // after a SharedWorker restart our port is dead: getTransport() can hang and
@@ -260,7 +275,7 @@
         await useWisp(wispUrl());
       } catch (e) {
         freshConn();
-        try { await useWisp(wispUrl()); } catch (e2) {}
+        await useWisp(wispUrl());
       }
     })();
     var clear = function () { live = null; };
@@ -337,7 +352,7 @@
   // needs neither the service worker nor scramjet, so it runs alongside them
   var wispReady = useWisp(wispUrl()).then(
     function () { console.log("[proxy] transport set:", wispUrl()); },
-    function (e) { console.error("[proxy] setTransport failed:", e); }
+    function (e) { console.error("[proxy] setTransport failed:", e); throw e; }
   );
 
   var ready = Promise.all([sjReady, wispReady]);
@@ -349,7 +364,7 @@
   function settle(ok) {
     isReady = ok;
     failed = !ok;
-    showStatus(false);
+    showStatus(!ok, "Proxy setup failed", "Reload or choose another Wisp server in settings.");
   }
 
   var CONNECTING_MSG = "connecting…";
@@ -376,15 +391,18 @@
     return (u || "").replace(/^wss?:\/\//i, "").replace(/\/$/, "");
   }
 
-  // nothing may hit the network before scramjet's client is up, so navigations
-  // queue rather than erroring out. typing is never blocked. if setup failed
-  // outright we run the navigation anyway, so the user sees the real error
-  // instead of a page that silently ignores them.
+  // Queue navigation until both Scramjet and the transport are ready. Surface
+  // setup failures rather than navigating with an unavailable transport.
   function whenReady(fn) {
-    var run = function () { wispLive().then(fn, fn); };
-    if (isReady || failed) { run(); return; }
+    var report = function (error) {
+      console.error("[proxy] navigation setup failed:", error);
+      showStatus(true, "Proxy setup failed", "Reload or choose another Wisp server in settings.");
+    };
+    var run = function () { return wispLive().then(fn).catch(report); };
+    if (isReady) { run(); return; }
+    if (failed) { report(new Error("Proxy initialization failed")); return; }
     showStatus(true);
-    ready.then(run, run);
+    ready.then(run, report);
   }
 
   function searchTemplate() {
@@ -547,46 +565,64 @@
     return out;
   }
 
-  // when a page comes back as scramjet's error, the configured server couldn't
-  // reach it — switch to the next untried server and reload the same url. it
-  // walks the whole list until one works or all are exhausted; a working load
-  // clears the trail and caches the server for the session.
-  function maybeFallback(tab) {
-    if (tab.isNew || !tab.url) return;
-    var active = tab.id === activeId;
+  // Retry failed document loads with the alternate transport before moving to
+  // another server. Subresource/ad failures do not switch the shared transport.
+  var switchingTransport = false;
+
+  async function maybeFallback(tab) {
+    // A background tab must not replace the shared transport used by the active tab.
+    if (tab.isNew || !tab.url || tab.id !== activeId || switchingTransport) return;
     if (!isErrorPage(tab.iframe)) {
       if (tab.tried && tab.tried.length && currentServer) {
-        console.log("%c[proxy] connected via " + serverLabel(currentServer), "color:#5f5");
+        console.log("[proxy] page loaded via " + serverLabel(currentServer) +
+          " (" + (currentTransport === EPOXY_TRANSPORT ? "Epoxy" : "libcurl") + ")");
       }
       tab.tried = null;
       if (currentServer) { try { sessionStorage.setItem("gnWispActive", currentServer); } catch (e) {} }
-      if (active) showStatus(false);
+      showStatus(false);
       return;
     }
-    var list = serverList();
-    if (!tab.tried) {
-      tab.tried = [];
-      console.log("[proxy] switching servers — will try (" + list.length + "): " + list.map(serverLabel).join(", "));
+    var url = tab.url;
+    var initialServer = wispUrl().trim().replace(/\/?$/, "/");
+    var list = [initialServer].concat(serverList()).filter(function (u, i, all) {
+      return all.indexOf(u) === i;
+    });
+    var transports = [TRANSPORT, EPOXY_TRANSPORT];
+    var key = function (server, transport) { return transport + "|" + server; };
+    if (!tab.tried) tab.tried = [];
+    var failedKey = key(initialServer, currentTransport);
+    if (tab.tried.indexOf(failedKey) === -1) tab.tried.push(failedKey);
+    switchingTransport = true;
+    try {
+      for (var i = 0; i < list.length; i++) {
+        for (var j = 0; j < transports.length; j++) {
+          if (tab.id !== activeId || tabs.indexOf(tab) === -1 || tab.url !== url) return;
+          var candidate = key(list[i], transports[j]);
+          if (tab.tried.indexOf(candidate) !== -1) continue;
+          tab.tried.push(candidate);
+          var label = transports[j] === EPOXY_TRANSPORT ? "Epoxy" : "libcurl";
+          showStatus(true, SWITCHING_MSG, serverLabel(list[i]) + " · " + label);
+          console.log("[proxy] retrying " + serverLabel(list[i]) + " via " + label);
+          try { sessionStorage.removeItem("gnWispActive"); } catch (e) {}
+          try {
+            await useWisp(list[i], transports[j]);
+          } catch (error) {
+            console.warn("[proxy] transport setup failed:", error);
+            freshConn();
+            continue;
+          }
+          if (tab.id === activeId && tabs.indexOf(tab) !== -1 && tab.url === url) tab.frame.go(url);
+          return;
+        }
+      }
+      console.warn("[proxy] no remaining server/transport combinations for " + url);
+      showStatus(true, "Unable to load this page", "Choose another Wisp server in settings or try another site.");
+    } catch (error) {
+      console.error("[proxy] fallback failed:", error);
+      showStatus(true, "Proxy retry failed", error.message);
+    } finally {
+      switchingTransport = false;
     }
-    if (currentServer && tab.tried.indexOf(currentServer) === -1) tab.tried.push(currentServer);
-    var next = null;
-    for (var i = 0; i < list.length; i++) {
-      if (tab.tried.indexOf(list[i]) === -1) { next = list[i]; break; }
-    }
-    if (!next) {
-      console.warn("[proxy] all " + list.length + " wisp servers failed for " + tab.url);
-      if (active) showStatus(false);
-      return;
-    }
-    tab.tried.push(next);
-    console.log("[proxy] " + serverLabel(currentServer || "server") + " failed → trying " +
-      serverLabel(next) + " (" + tab.tried.length + "/" + list.length + ")");
-    if (active) showStatus(true, SWITCHING_MSG, serverLabel(next));
-    try { sessionStorage.removeItem("gnWispActive"); } catch (e) {}
-    useWisp(next).then(
-      function () { tab.frame.go(tab.url); },
-      function () { maybeFallback(tab); }
-    );
   }
 
   // per-tab history so back/forward walk the proxied site, not the joint

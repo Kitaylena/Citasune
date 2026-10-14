@@ -1468,7 +1468,7 @@ var opts = [
   "header_limit",
   "buffer_size"
 ];
-var EpoxyTransport = class {
+var CS$WZo4UAVCo4E8Uuxk = class {
   ready = false;
   client_version;
   client = null;
@@ -1533,6 +1533,6 @@ var EpoxyTransport = class {
   }
 };
 export {
-  EpoxyTransport as default,
-  info as epoxyInfo
+  CS$WZo4UAVCo4E8Uuxk as default,
+  info as CS$8aivJSj3Fdcxu4KW
 };

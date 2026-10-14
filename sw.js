@@ -1,6 +1,6 @@
 importScripts("/scram/scramjet.all.js");
 
-const { ScramjetServiceWorker } = $scramjetLoadWorker();
+const { ScramjetServiceWorker } = CS$FPsKkw56ZpvpYu5w();
 
 // has to match the prefix the controller is created with in proxybrowser.js.
 // we can't read it off the config here, since the whole point is handling the
