@@ -6,6 +6,13 @@
   <title>New Tab</title>
   <link rel="icon" type="image/png" href="/assets/imageassets/CitasuneIcon.png">
   <link rel="stylesheet" href="/style/style.css">
+   <script>
+        window.addEventListener('beforeunload', function (event) {
+            event.preventDefault();
+            event.returnValue = '';
+            return 'Are you sure you want to leave? Any unsaved changes will be lost.';
+        });
+    </script>
   <style>
     #quickapps {
       display: flex;
