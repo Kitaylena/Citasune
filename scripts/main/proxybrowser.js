@@ -1,7 +1,7 @@
 (function () {
   if (!("serviceWorker" in navigator)) { location.href = "/index.html"; return; }
   if (typeof CS$dwKyisuKE3KfS4JY === "undefined") return;
-  if (typeof BareMux === "undefined") return;
+  if (typeof CS$voKEE8zue8cdMi9JW === "undefined") return;
 
   // panic key also has to be caught inside the proxied iframes, since their
   // keydown events never reach this page. (main.js handles this page itself.)
@@ -205,7 +205,7 @@
     },
   });
 
-  var conn = new BareMux.BareMuxConnection("/baremux/worker.js");
+  var conn = new CS$voKEE8zue8cdMi9JW.CS$kuxwJuVFjyCFWwiV("/baremux/worker.js");
 
   function useWisp(url) {
     // libcurl-transport rejects a wisp url with stray whitespace or without a
@@ -263,7 +263,7 @@
   // setTransport() can post into the void. a fresh connection re-acquires a live
   // port to the current worker, so recreate it whenever the old one misbehaves.
   function freshConn() {
-    try { conn = new BareMux.BareMuxConnection("/baremux/worker.js"); } catch (e) {}
+    try { conn = new CS$voKEE8zue8cdMi9JW.CS$kuxwJuVFjyCFWwiV("/baremux/worker.js"); } catch (e) {}
   }
 
   function wispLive() {
