@@ -13,11 +13,11 @@
 
   // assets the proxy page needs, warmed into the http cache ahead of time
   var ASSETS = [
-    "/scram/scramjet.all.js",
-    "/scram/scramjet.sync.js",
-    "/scram/scramjet.wasm.wasm",
-    "/baremux/index.js",
-    "/baremux/worker.js",
+    "/vendor/net.core.js",
+    "/vendor/net.sync.js",
+    "/vendor/net.data.wasm",
+    "/vendor/mux.js",
+    "/vendor/mux.worker.js",
     "/libcurl/index.js",
   ];
 

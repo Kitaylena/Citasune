@@ -194,8 +194,8 @@
     }
   </style>
   <script src="/scripts/main/proxytransport.js?v=3"></script>
-  <script src="/baremux/index.js" defer></script>
-  <script src="/scram/scramjet.all.js" defer></script>
+  <script src="/vendor/mux.js" defer></script>
+  <script src="/vendor/net.core.js" defer></script>
 </head>
 <body>
   <div id="sj-tabs">
@@ -206,7 +206,7 @@
     <button id="sj-fwd" type="button" title="forward"><img src="/assets/imageassets/redo.png" alt="forward"></button>
     <button id="sj-reload" type="button" title="reload"><img src="/assets/imageassets/refresh.png" alt="reload"></button>
     <form id="sj-addr">
-      <input id="sj-addrinput" type="text" spellcheck="false" placeholder="enter url or search…">
+      <input id="sj-addrinput" name="user" autocomplete="off" data-private spellcheck="false" placeholder="enter url or search…">
     </form>
     <button id="sj-settings" type="button" title="Connection settings" aria-label="Connection settings" aria-haspopup="true" aria-expanded="false" aria-controls="sj-transport-menu">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="currentColor" stroke="none"/><circle cx="15" cy="17" r="3" fill="currentColor" stroke="none"/></svg>
@@ -229,6 +229,7 @@
   <div id="sj-views">
     <div id="sj-status">connecting…</div>
   </div>
+  <script src="/scripts/main/privacyshield.js"></script>
   <script src="/scripts/main/main.js" defer></script>
   <script src="/scripts/main/proxywarm.js" defer></script>
   <script src="/scripts/main/proxybrowser.js" defer></script>

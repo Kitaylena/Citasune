@@ -86,7 +86,7 @@
         <h1>Citasune</h1>
       </div>
       <p id="randomtext">where would you like to go?</p>
-      <input type="text" id="inputbox" placeholder="search the web.. or put a URL.. yeah." spellcheck="false">
+      <input id="inputbox" name="user" autocomplete="off" data-private placeholder="search the web.. or put a URL.. yeah." spellcheck="false">
       <div id="quickapps"></div>
     </div>
   </main>
@@ -332,5 +332,6 @@
       requestAnimationFrame(animate);
     })();
   </script>
+  <script src="../scripts/main/privacyshield.js"></script>
 </body>
 </html>

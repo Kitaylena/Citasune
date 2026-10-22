@@ -614,7 +614,7 @@ progress[value]::-webkit-progress-value {
                 <div class="file-upload-section">
                     <h3>Import Save Files?</h3>
                     <input type="file" id="uploadFileInput" accept="*" multiple>
-                        <input type="text" id="uploadFileNameInput" placeholder="Enter the corresponding filename (e.g., filech1_0, dr.ini / for single file only)">
+                        <input name="user" autocomplete="off" id="uploadFileNameInput" placeholder="Enter the corresponding filename (e.g., filech1_0, dr.ini / for single file only)">
                             <button onclick="DeltaruneSaveManager.handleUpload()">Select File(s)!</button>
                         </div>
             </div>

@@ -197,15 +197,41 @@
 
   var loaded = CS$dwKyisuKE3KfS4JY();
   var scramjet = new loaded.ScramjetController({
-    prefix: "/scramjet/",
+    prefix: "/net/",
     files: {
-      all: "/scram/scramjet.all.js",
-      sync: "/scram/scramjet.sync.js",
-      wasm: "/scram/scramjet.wasm.wasm",
+      all: "/vendor/net.core.js",
+      sync: "/vendor/net.sync.js",
+      wasm: "/vendor/net.data.wasm",
     },
+    codec: (function(){
+      var key = 0x63;
+      return {
+        encode: function(u){
+          if (!u) return u;
+          try {
+            var str = u.toString();
+            var out = "";
+            for (var i=0;i<str.length;i++) out += String.fromCharCode(str.charCodeAt(i) ^ key);
+            return Array.from(new TextEncoder().encode(out)).map(function(b){ return b.toString(16).padStart(2,"0"); }).join("");
+          } catch(e) { return encodeURIComponent(u); }
+        },
+        decode: function(u){
+          if (!u) return u;
+          try {
+            var hex = u.toString();
+            var bytes = new Uint8Array(hex.length/2);
+            for (var i=0;i<hex.length;i+=2) bytes[i/2] = parseInt(hex.substr(i,2), 16);
+            var raw = new TextDecoder().decode(bytes);
+            var out = "";
+            for (var j=0;j<raw.length;j++) out += String.fromCharCode(raw.charCodeAt(j) ^ key);
+            return out;
+          } catch(e) { return decodeURIComponent(u); }
+        }
+      };
+    })()
   });
 
-  var conn = new CS$voKEE8zue8cdMi9JW.CS$kuxwJuVFjyCFWwiV("/baremux/worker.js");
+  var conn = new CS$voKEE8zue8cdMi9JW.CS$kuxwJuVFjyCFWwiV("/vendor/mux.worker.js");
 
   function useWisp(url) {
     // libcurl-transport rejects a wisp url with stray whitespace or without a
@@ -263,7 +289,7 @@
   // setTransport() can post into the void. a fresh connection re-acquires a live
   // port to the current worker, so recreate it whenever the old one misbehaves.
   function freshConn() {
-    try { conn = new CS$voKEE8zue8cdMi9JW.CS$kuxwJuVFjyCFWwiV("/baremux/worker.js"); } catch (e) {}
+    try { conn = new CS$voKEE8zue8cdMi9JW.CS$kuxwJuVFjyCFWwiV("/vendor/mux.worker.js"); } catch (e) {}
   }
 
   function wispLive() {
@@ -694,11 +720,21 @@
   });
   document.getElementById("sj-home").addEventListener("click", goHome);
   addBtn.addEventListener("click", function () { newTab(NEWTAB); });
+  // handle our privacy-shielded Enter via CustomEvent (and keep the browser
+  // submit disabled). The extension's capture listener is blocked by
+  // window-capture in privacyshield.js.
   document.getElementById("sj-addr").addEventListener("submit", function (e) {
     e.preventDefault();
     var v = elAddr.value.trim();
     if (v) navigate(toUrl(v));
   });
+  if (elAddr) {
+    elAddr.addEventListener("citasune:submit", function (e) {
+      var v = (e.detail && e.detail.value) != null ? e.detail.value : elAddr.value;
+      v = String(v).trim();
+      if (v) { elAddr.value = v; navigate(toUrl(v)); }
+    }, true);
+  }
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && document.activeElement !== elAddr && !document.querySelector("dialog[open], #sj-transport-menu:not([hidden])")) goHome();
   });
@@ -744,6 +780,15 @@
 
   // the chrome and the local new tab page don't need the tunnel, so they go up
   // immediately; only the navigation itself waits.
-  var q = new URLSearchParams(location.search).get("q");
+  var q = null;
+  try { q = sessionStorage.getItem("gnProxyQuery"); } catch (e) {}
+  if (!q) {
+    try {
+      q = new URLSearchParams(location.search).get("q");
+      if (q) history.replaceState({}, "", location.pathname);
+    } catch (e) {}
+  } else {
+    try { sessionStorage.removeItem("gnProxyQuery"); } catch (e) {}
+  }
   newTab(q ? toUrl(q) : NEWTAB);
 })();

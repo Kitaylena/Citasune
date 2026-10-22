@@ -511,6 +511,10 @@ function capturePanicKey(btn) {
 }
 
 function setPanicUrl(url) {
+  url = String(url == null ? "" : url).trim();
+  // the panic key navigates to this, so anything but a plain web address is
+  // rejected — a javascript: or data: url here would run in this page.
+  if (url && !/^https?:\/\//i.test(url)) url = "";
   try { localStorage.setItem("gnPanicUrl", url); } catch (e) {}
 }
 
@@ -530,6 +534,8 @@ document.addEventListener("keydown", (e) => {
   if (key && e.key.toLowerCase() === key.toLowerCase()) {
     let url = "https://www.google.com";
     try { url = localStorage.getItem("gnPanicUrl") || url; } catch (er) {}
+    // a value stored by an older build could still be a javascript: url
+    if (!/^https?:\/\//i.test(url)) url = "https://www.google.com";
     (window.top || window).location.href = url;
   }
 });
@@ -592,6 +598,18 @@ function setSearchEngine(url) {
   try { localStorage.setItem("gnSearch", url); } catch (e) {}
 }
 
+// settings values live in localStorage and the user can type anything into
+// them, so they are never interpolated into markup raw. esc() is the only
+// sanctioned way to put one of them into an attribute or text node.
+function esc(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function openSettings() {
   let curAccent = defaultaccent, curFont = defaultfont, glassOn = true;
   let autoBlank = false, curCloak = "None", panicKey = "", panicUrl = "https://www.google.com";
@@ -629,7 +647,7 @@ function openSettings() {
     `<option value="${c.name}"${c.name === curCloak ? " selected" : ""}>${c.name}</option>`
   ).join("");
 
-  const panicLabel = panicKey ? "Key: " + (panicKey === " " ? "Space" : panicKey) : "Set key";
+  const panicLabel = panicKey ? "Key: " + esc(panicKey === " " ? "Space" : panicKey) : "Set key";
 
   createpopup(`
     <h2 style="margin-bottom: 1rem;">Settings</h2>
@@ -670,7 +688,7 @@ function openSettings() {
     </div>
     <div class="settings-row">
       <label>panic URL</label>
-      <input type="text" class="settings-input" value="${panicUrl}" oninput="setPanicUrl(this.value)" placeholder="https://...">
+      <input class="settings-input" name="user" value="${esc(panicUrl)}" oninput="setPanicUrl(this.value)" placeholder="https://...">
     </div>
 
     <h3 style="margin:1.4rem 0 0.4rem;">proxy</h3>
@@ -692,7 +710,7 @@ function openSettings() {
     </div>
     <div class="settings-row">
       <label>or a custom one</label>
-      <input id="wispCustom" type="text" class="settings-input" value="${curWisp}" onchange="setWisp(this.value)" placeholder="${DEFAULT_WISP}">
+      <input id="wispCustom" name="user" class="settings-input" value="${esc(curWisp)}" onchange="setWisp(this.value)" placeholder="${esc(DEFAULT_WISP)}">
     </div>
   `);
 }

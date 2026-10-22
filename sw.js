@@ -1,11 +1,11 @@
-importScripts("/scram/scramjet.all.js");
+importScripts("/vendor/net.core.js");
 
 const { ScramjetServiceWorker } = CS$FPsKkw56ZpvpYu5w();
 
 // has to match the prefix the controller is created with in proxybrowser.js.
 // we can't read it off the config here, since the whole point is handling the
 // case where the config isn't loaded yet.
-const PREFIX = "/scramjet/";
+const PREFIX = "/net/";
 const CONFIG_WAIT = 5000;
 const CONFIG_POLL = 50;
 
@@ -115,6 +115,12 @@ async function tryLoadConfig(scramjet) {
     scramjet.config = messaged;
     return false;
   }
+  // refuse a stale config that still routes under the old prefix
+  if (scramjet.config && scramjet.config.prefix && scramjet.config.prefix !== PREFIX) {
+    scramjet.config = messaged;
+    configured = false;
+    return false;
+  }
   configured = true;
   return true;
 }
@@ -140,9 +146,22 @@ async function handleRequest(event) {
     // fetch() rejects rather than throwing, so it has to be awaited inside the
     // try for the fallback below to catch anything at all.
     try {
-      if (scramjet.route(event)) return await scramjet.fetch(event);
+      if (scramjet.route && scramjet.route(event)) return await scramjet.fetch(event);
     } catch (e) {}
   }
+  // add safe security headers for same-origin non-proxied responses only
+  try {
+    const url = new URL(event.request.url);
+    if (url.origin === location.origin && !url.pathname.startsWith(PREFIX)) {
+      const res = await fetch(event.request);
+      const headers = new Headers(res.headers);
+      headers.set("X-Content-Type-Options", "nosniff");
+      headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+      headers.set("X-Frame-Options", "SAMEORIGIN");
+      headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+      return new Response(res.body, { status: res.status, statusText: res.statusText, headers: headers });
+    }
+  } catch (e) {}
   return fetch(event.request);
 }
 
