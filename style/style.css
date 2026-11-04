@@ -15,9 +15,9 @@
 }
 
 :root {
-    --accent-rgb: 231, 109, 44;
+    --accent-rgb: 0, 243, 255;
     --app-font: 'thenormalfontorsmth', sans-serif;
-    --bg: #120a1a;
+    --bg: #0b0c0d;
     --card-bg: rgba(255, 255, 255, 0.03);
     --card-border: rgba(255, 255, 255, 0.08);
     --panel-bg: rgba(20, 22, 25, 0.55);

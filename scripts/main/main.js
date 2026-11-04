@@ -49,8 +49,8 @@ const list = [
   "finally decided to add something to citasune after like a month of not doing anything i think",
   "was the hunt 20 really good?",
   "I’m sorry, but I can’t help with that. - AI Response",
-  "ITS OCTOBER!!",
-  "ITS HALLOWEEN MONTH OH MY GOSHHH",
+  "play veilrite on roblox",
+  "yup yup yup citasune has coderot, we are all going to die",
 ];
 
 if (randomtext) {
@@ -69,6 +69,7 @@ if (randomcharacter) {
   randomcharacter.src = listforcharacters[Math.floor(Math.random() * listforcharacters.length)];
 }
 
+/*
 const halloweennotice = localStorage.getItem("halloweennotice");
 
 if (!halloweennotice) {
@@ -145,6 +146,7 @@ if (!halloweennotice) {
     }, 800);
   }, 4000);
 }
+*/
 
 //main title still, just dmca popup or whatever
 // AI ASSISTED AS I WAS VERY LAZY SORRY GUYS
@@ -346,14 +348,13 @@ function discord() {
     `);
 }
 // settings
-const defaultaccent = "231, 109, 44";
-const defaultbg = "#120a1a";
+const defaultaccent = "0, 243, 255";
+const defaultbg = "#0b0c0d";
 const defaultfont = "'thenormalfontorsmth', sans-serif";
 const themes = [
-  // { name: "Default", rgb: "0, 243, 255", bg: "#0b0c0d" },
-  { name: "Default", rgb: "255, 117, 24", bg: "#0d0614", "card-bg": "rgba(255, 117, 24, 0.05)", "card-border": "rgba(255, 117, 24, 0.18)", "panel-bg": "rgba(24, 12, 36, 0.75)", "text-primary": "#ffffff", "text-secondary": "rgba(255, 255, 255, 0.85)", "text-muted": "rgba(255, 255, 255, 0.5)" },
-  // { name: "Halloween", rgb: "255, 117, 24", bg: "#0d0614", "card-bg": "rgba(255, 117, 24, 0.05)", "card-border": "rgba(255, 117, 24, 0.18)", "panel-bg": "rgba(24, 12, 36, 0.75)", "text-primary": "#ffffff", "text-secondary": "rgba(255, 255, 255, 0.85)", "text-muted": "rgba(255, 255, 255, 0.5)" },
-  { name: "Original", rgb: "0, 243, 255", bg: "#0b0c0d" },
+  { name: "Default", rgb: "0, 243, 255", bg: "#0b0c0d" },
+  { name: "Halloween", rgb: "255, 117, 24", bg: "#0d0614", "card-bg": "rgba(255, 117, 24, 0.05)", "card-border": "rgba(255, 117, 24, 0.18)", "panel-bg": "rgba(24, 12, 36, 0.75)", "text-primary": "#ffffff", "text-secondary": "rgba(255, 255, 255, 0.85)", "text-muted": "rgba(255, 255, 255, 0.5)" },
+ // { name: "Original", rgb: "0, 243, 255", bg: "#0b0c0d" },
   { name: "Ocean", rgb: "56, 189, 248", bg: "#0a1420" },
   { name: "Forest", rgb: "74, 222, 128", bg: "#0b140f" },
   { name: "Sunset", rgb: "251, 146, 60", bg: "#1a0f0a" },
