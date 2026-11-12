@@ -28,16 +28,15 @@
 
 ### October
 * make everything spooky for halloween ouu -- DONE
-* Add Apps
-* more games ofc
-* TBD, unsure if there may be more stuff I'll do afterwards
 
 ### November-December
-* TBD
+* Add Apps
+* lil more games
+* TBD, unsure if there may be more stuff I'll do afterwards
 
 ## To-Do List
 
-* everything in october
+* everything in November-December
 
 ---
 
