@@ -155,17 +155,6 @@
   ]
  },
  {
-  "id": 1017,
-  "name": "Wolfenstein 3D",
-  "cover": "/assets/gameicons/1017.png",
-  "url": "/games/wolfenstein.html",
-  "author": "Raven Software",
-  "authorLink": "https://www.ravensoftware.com",
-  "special": [
-   "port"
-  ]
- },
- {
   "id": 1018,
   "name": "Prank Call Tung Tung Sahur Clicker",
   "cover": "/assets/gameicons/1018.png",
