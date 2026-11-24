@@ -30,9 +30,12 @@
 * make everything spooky for halloween ouu -- DONE
 
 ### November-December
-* Add Apps
-* lil more games
-* TBD, unsure if there may be more stuff I'll do afterwards
+* Add Apps -- DONE
+* lil more games -- DONE (however may be more)
+* make everything jolly oouu merry fucking christmas -- DONE
+* Add Proxied games
+* Get a BYOD
+* Get a WISP Server
 
 ## To-Do List
 
