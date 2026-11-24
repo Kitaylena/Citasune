@@ -483,13 +483,13 @@ function discord() {
     `);
 }
 // settings
-const defaultaccent = "0, 243, 255";
-const defaultbg = "#0b0c0d";
+const defaultaccent = "255, 255, 255";
+const defaultbg = "#070c08";
 const defaultfont = "'thenormalfontorsmth', sans-serif";
 const themes = [
-  { name: "Default", rgb: "0, 243, 255", bg: "#0b0c0d" },
+  { name: "Default", rgb: "255, 255, 255", bg: "#070c08", "card-bg": "rgba(255, 255, 255, 0.05)", "card-border": "rgba(255, 24, 24, 0.18)", "panel-bg": "rgba(12, 36, 16, 0.75)", "text-primary": "#ffffff", "text-secondary": "rgba(146, 240, 167, 0.85)", "text-muted": "rgba(255, 255, 255, 0.5)" },
   { name: "Halloween", rgb: "255, 117, 24", bg: "#0a070c", "card-bg": "rgba(255, 117, 24, 0.05)", "card-border": "rgba(255, 117, 24, 0.18)", "panel-bg": "rgba(24, 12, 36, 0.75)", "text-primary": "#ffffff", "text-secondary": "rgba(255, 255, 255, 0.85)", "text-muted": "rgba(255, 255, 255, 0.5)" },
-  { name: "Christmas", rgb: "255, 255, 255", bg: "#070c08", "card-bg": "rgba(255, 255, 255, 0.05)", "card-border": "rgba(255, 24, 24, 0.18)", "panel-bg": "rgba(12, 36, 16, 0.75)", "text-primary": "#ffffff", "text-secondary": "rgba(146, 240, 167, 0.85)", "text-muted": "rgba(255, 255, 255, 0.5)" },
+ // { name: "Christmas", rgb: "255, 255, 255", bg: "#070c08", "card-bg": "rgba(255, 255, 255, 0.05)", "card-border": "rgba(255, 24, 24, 0.18)", "panel-bg": "rgba(12, 36, 16, 0.75)", "text-primary": "#ffffff", "text-secondary": "rgba(146, 240, 167, 0.85)", "text-muted": "rgba(255, 255, 255, 0.5)" },
  // { name: "Original", rgb: "0, 243, 255", bg: "#0b0c0d" },
   { name: "Ocean", rgb: "56, 189, 248", bg: "#0a1420" },
   { name: "Forest", rgb: "74, 222, 128", bg: "#0b140f" },
