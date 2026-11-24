@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html xmlns='http://www.w3.org/1999/xhtml' lang='' xml:lang=''>
+<head>
+	<base href="https://cdn.jsdelivr.net/gh/Kitaylena/web-ports@main/brotato/">
+	<meta charset='utf-8' />
+	<meta name='viewport' content='width=device-width, user-scalable=no' />
+	<title>Brotato</title>
+	<style type='text/css'>
+
+		body {
+			touch-action: none;
+			margin: 0;
+			border: 0 none;
+			padding: 0;
+			text-align: center;
+			background-color: black;
+		}
+
+		#canvas {
+			display: block;
+			margin: 0;
+			color: white;
+		}
+
+		#canvas:focus {
+			outline: none;
+		}
+
+		.godot {
+			font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+			color: #e0e0e0;
+			background-color: #3b3943;
+			background-image: linear-gradient(to bottom, #403e48, #35333c);
+			border: 1px solid #45434e;
+			box-shadow: 0 0 1px 1px #2f2d35;
+		}
+
+
+		/* Status display
+		 * ============== */
+
+		#status {
+			position: absolute;
+			left: 0;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			/* don't consume click events - make children visible explicitly */
+			visibility: hidden;
+		}
+
+		#status-progress {
+			width: 366px;
+			height: 7px;
+			background-color: #38363A;
+			border: 1px solid #444246;
+			padding: 1px;
+			box-shadow: 0 0 2px 1px #1B1C22;
+			border-radius: 2px;
+			visibility: visible;
+		}
+
+		@media only screen and (orientation:portrait) {
+			#status-progress {
+				width: 61.8%;
+			}
+		}
+
+		#status-progress-inner {
+			height: 100%;
+			width: 0;
+			box-sizing: border-box;
+			transition: width 0.5s linear;
+			background-color: #202020;
+			border: 1px solid #222223;
+			box-shadow: 0 0 1px 1px #27282E;
+			border-radius: 3px;
+		}
+
+		#status-indeterminate {
+			height: 42px;
+			visibility: visible;
+			position: relative;
+		}
+
+		#status-indeterminate > div {
+			width: 4.5px;
+			height: 0;
+			border-style: solid;
+			border-width: 9px 3px 0 3px;
+			border-color: #2b2b2b transparent transparent transparent;
+			transform-origin: center 21px;
+			position: absolute;
+		}
+
+		#status-indeterminate > div:nth-child(1) { transform: rotate( 22.5deg); }
+		#status-indeterminate > div:nth-child(2) { transform: rotate( 67.5deg); }
+		#status-indeterminate > div:nth-child(3) { transform: rotate(112.5deg); }
+		#status-indeterminate > div:nth-child(4) { transform: rotate(157.5deg); }
+		#status-indeterminate > div:nth-child(5) { transform: rotate(202.5deg); }
+		#status-indeterminate > div:nth-child(6) { transform: rotate(247.5deg); }
+		#status-indeterminate > div:nth-child(7) { transform: rotate(292.5deg); }
+		#status-indeterminate > div:nth-child(8) { transform: rotate(337.5deg); }
+
+		#status-notice {
+			margin: 0 100px;
+			line-height: 1.3;
+			visibility: visible;
+			padding: 4px 6px;
+			visibility: visible;
+		}
+	</style>
+
+</head>
+<body>
+	<canvas id='canvas'>
+		HTML5 canvas appears to be unsupported in the current browser.<br />
+		Please try updating or use a different browser.
+	</canvas>
+	<div id='status'>
+		<div id='status-progress' style='display: none;' oncontextmenu='event.preventDefault();'><div id ='status-progress-inner'></div></div>
+		<div id='status-indeterminate' style='display: none;' oncontextmenu='event.preventDefault();'>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+		</div>
+		<div id='status-notice' class='godot' style='display: none;'></div>
+	</div>
+
+	<script type='text/javascript' src='index.js'></script>
+	<script type='text/javascript'>//<![CDATA[
+
+		const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":204866704,"index.wasm":19721321},"focusCanvas":true,"gdnativeLibs":[]};
+		var engine = new Engine(GODOT_CONFIG);
+function loadSplitPck(engine, manifest) {
+    const preload = engine.preloadFile;
+
+    engine.preloadFile = async function (file, path) {
+        if (file !== 'index.pck') {
+            return preload.call(this, file, path);
+        }
+
+        if (!Number.isSafeInteger(manifest.size) || manifest.size <= 0 ||
+            !Array.isArray(manifest.parts) || manifest.parts.length === 0) {
+            throw new Error('invalid pck manifest');
+        }
+
+        const pack = new Uint8Array(manifest.size);
+        const progress = document.getElementById('status-progress');
+        let offset = 0;
+
+        for (const part of manifest.parts) {
+            if (!/^index\.pck\.part-\d{4}$/.test(part.file) ||
+                !Number.isSafeInteger(part.size) || part.size <= 0 ||
+                part.size > 20000000 || offset + part.size > pack.length) {
+                throw new Error('invalid pck part');
+            }
+
+            const download = await fetch(part.file);
+            if (!download.ok) {
+                throw new Error(`${part.file}: http ${download.status}`);
+            }
+            const bytes = new Uint8Array(await download.arrayBuffer());
+            if (bytes.length !== part.size) {
+                throw new Error(`${part.file}: incomplete download`);
+            }
+
+            if (globalThis.crypto?.subtle) {
+                const digest = await crypto.subtle.digest('SHA-256', bytes);
+                const hash = Array.from(new Uint8Array(digest), byte =>
+                    byte.toString(16).padStart(2, '0')).join('');
+                if (hash !== part.sha256) {
+                    throw new Error(`${part.file}: checksum mismatch`);
+                }
+            }
+
+            pack.set(bytes, offset);
+            offset += bytes.length;
+            if (progress) {
+                progress.max = manifest.size;
+                progress.value = offset;
+            }
+        }
+
+        if (offset !== pack.length) {
+            throw new Error('incomplete pck manifest');
+        }
+        return preload.call(this, pack.buffer, path || file);
+    };
+}
+loadSplitPck(engine, {"size":204866704,"parts":[{"file":"index.pck.part-0000","size":20000000,"sha256":"5fad0ad252c636dfe80ecd6236f01b524647a6758cc45f289e75850cd4ed5194"},{"file":"index.pck.part-0001","size":20000000,"sha256":"77fbde12d389c2f491a1972feecfeade2202c6c4be0a8b6ae0f2810cfdf24176"},{"file":"index.pck.part-0002","size":20000000,"sha256":"9b750cb39c6a96f5d84504aa5838d3077f97f2b1dd0339be72271783034f354f"},{"file":"index.pck.part-0003","size":20000000,"sha256":"b77823220a7790f3aef5aec148871d3a341c609b44bc9203fb129027426bb9d9"},{"file":"index.pck.part-0004","size":20000000,"sha256":"0a175e4cd6b251c49139b2dc54d1c9b1e9a7f075775a384c8620c84da4dd2f7b"},{"file":"index.pck.part-0005","size":20000000,"sha256":"45a717cd8f9b41b9fd24db39659ee7558b759079b4fafcbfa79e013b01200257"},{"file":"index.pck.part-0006","size":20000000,"sha256":"1aaf39971347064c65548600fd6a43270394f85c396b9dba0b2cf569164e4526"},{"file":"index.pck.part-0007","size":20000000,"sha256":"feefc83874fc64809e711bb75125781d220b53e61f1c9663030de9c42686681b"},{"file":"index.pck.part-0008","size":20000000,"sha256":"688797b9fb0e16231b08499c9bd67222ceef483f6ee04ec8e3e59aa2913124fb"},{"file":"index.pck.part-0009","size":20000000,"sha256":"a5ba443cf293e7d4dcff675c2fc31ee13ebf1fd8e4d94002c904e42e75e6e026"},{"file":"index.pck.part-0010","size":4866704,"sha256":"b5b573508e8e67bf12ed972164beeabd6b2b77621e8554ec9c3cecec430d93e0"}]});
+
+		(function() {
+			const INDETERMINATE_STATUS_STEP_MS = 100;
+			var statusProgress = document.getElementById('status-progress');
+			var statusProgressInner = document.getElementById('status-progress-inner');
+			var statusIndeterminate = document.getElementById('status-indeterminate');
+			var statusNotice = document.getElementById('status-notice');
+
+			var initializing = true;
+			var statusMode = 'hidden';
+
+			var animationCallbacks = [];
+			function animate(time) {
+				animationCallbacks.forEach(callback => callback(time));
+				requestAnimationFrame(animate);
+			}
+			requestAnimationFrame(animate);
+
+			function setStatusMode(mode) {
+
+				if (statusMode === mode || !initializing)
+					return;
+				[statusProgress, statusIndeterminate, statusNotice].forEach(elem => {
+					elem.style.display = 'none';
+				});
+				animationCallbacks = animationCallbacks.filter(function(value) {
+					return (value != animateStatusIndeterminate);
+				});
+				switch (mode) {
+					case 'progress':
+						statusProgress.style.display = 'block';
+						break;
+					case 'indeterminate':
+						statusIndeterminate.style.display = 'block';
+						animationCallbacks.push(animateStatusIndeterminate);
+						break;
+					case 'notice':
+						statusNotice.style.display = 'block';
+						break;
+					case 'hidden':
+						break;
+					default:
+						throw new Error('Invalid status mode');
+				}
+				statusMode = mode;
+			}
+
+			function animateStatusIndeterminate(ms) {
+				var i = Math.floor(ms / INDETERMINATE_STATUS_STEP_MS % 8);
+				if (statusIndeterminate.children[i].style.borderTopColor == '') {
+					Array.prototype.slice.call(statusIndeterminate.children).forEach(child => {
+						child.style.borderTopColor = '';
+					});
+					statusIndeterminate.children[i].style.borderTopColor = '#dfdfdf';
+				}
+			}
+
+			function setStatusNotice(text) {
+				while (statusNotice.lastChild) {
+					statusNotice.removeChild(statusNotice.lastChild);
+				}
+				var lines = text.split('\n');
+				lines.forEach((line) => {
+					statusNotice.appendChild(document.createTextNode(line));
+					statusNotice.appendChild(document.createElement('br'));
+				});
+			};
+
+			function displayFailureNotice(err) {
+				var msg = err.message || err;
+				console.error(msg);
+				setStatusNotice(msg);
+				setStatusMode('notice');
+				initializing = false;
+			};
+
+			if (!Engine.isWebGLAvailable()) {
+				displayFailureNotice('WebGL not available');
+			} else {
+				setStatusMode('indeterminate');
+				engine.startGame({
+					'onProgress': function (current, total) {
+						if (total > 0) {
+							statusProgressInner.style.width = current/total * 100 + '%';
+							setStatusMode('progress');
+							if (current === total) {
+								// wait for progress bar animation
+								setTimeout(() => {
+									setStatusMode('indeterminate');
+								}, 500);
+							}
+						} else {
+							setStatusMode('indeterminate');
+						}
+					},
+				}).then(() => {
+					setStatusMode('hidden');
+					initializing = false;
+				}, displayFailureNotice);
+			}
+		})();
+	//]]></script>
+</body>
+</html>
+

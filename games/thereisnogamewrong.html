@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<base href="https://cdn.jsdelivr.net/gh/Kitaylena/web-ports@main/thereisnogamewrong/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
+<title>There Is No Game: Wrong Dimension</title>
+<script>
+  // Unity requests fullscreen / pointer lock from its frame loop, after the user gesture has ended; the browser
+  // refuses and Unity leaves the rejection uncaught. Swallow those unless a real click asked for fullscreen.
+  (function () {
+    window.__webportAllowFullscreen = false;
+    var proto = Element.prototype;
+    ['requestFullscreen', 'webkitRequestFullscreen', 'mozRequestFullScreen', 'msRequestFullscreen'].forEach(function (name) {
+      var original = proto[name];
+      if (!original) return;
+      proto[name] = function () {
+        if (!window.__webportAllowFullscreen) return Promise.resolve();
+        window.__webportAllowFullscreen = false;
+        try { return original.apply(this, arguments); } catch (e) { return Promise.resolve(); }
+      };
+    });
+    var lockOriginal = proto.requestPointerLock;
+    if (lockOriginal && !proto.__webportPointerLockWrapped) {
+      proto.__webportPointerLockWrapped = true;
+      proto.requestPointerLock = function () {
+        var el = this, r;
+        try { r = lockOriginal.apply(el, arguments); } catch (e) { r = null; }
+        if (r && typeof r.catch === 'function') {
+          return r.catch(function () {
+            var retry = function () { window.removeEventListener('pointerdown', retry, true); try { lockOriginal.call(el); } catch (e2) {} };
+            window.addEventListener('pointerdown', retry, true);
+          });
+        }
+        return r;
+      };
+    }
+  })();
+  window.addEventListener('error', function (e) {
+    if (e && e.message && e.message.indexOf('Fullscreen request denied') >= 0) { e.stopImmediatePropagation(); e.preventDefault(); return true; }
+  }, true);
+  window.addEventListener('unhandledrejection', function (e) {
+    var m = e && e.reason && (e.reason.message || String(e.reason));
+    if (m && m.indexOf('Fullscreen request denied') >= 0) e.preventDefault();
+  });
+</script>
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+  #unity-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; background: #000; outline: none; cursor: none; }
+  #loader { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(60vw, 420px); color: #ccc; font: 14px sans-serif; text-align: center; }
+  #bar { height: 6px; margin-top: 10px; background: #222; border-radius: 3px; overflow: hidden; }
+  #fill { height: 100%; width: 0; background: #c33; transition: width .2s; }
+  #err { color: #f66; margin-top: 12px; white-space: pre-wrap; }
+  /* save-file menu: small, unobtrusive, top-left */
+  #savebtn { position: fixed; left: 8px; top: 8px; z-index: 10; width: 30px; height: 30px; border-radius: 6px; border: 1px solid #555;
+             background: rgba(20,20,20,.6); color: #ddd; font: 16px sans-serif; cursor: pointer; opacity: .35; transition: opacity .2s; padding: 0; }
+  #savebtn:hover, #savebtn.open { opacity: 1; }
+  #savemenu { position: fixed; left: 8px; top: 44px; z-index: 10; display: none; flex-direction: column; gap: 6px; padding: 8px;
+              background: rgba(20,20,20,.92); border: 1px solid #555; border-radius: 6px; font: 13px sans-serif; color: #ddd; cursor: auto; }
+  #savemenu button { background: #333; color: #eee; border: 1px solid #666; border-radius: 4px; padding: 6px 10px; cursor: pointer; text-align: left; }
+  #savemenu button:hover { background: #444; }
+  #savemsg { color: #9c9; max-width: 220px; }
+</style>
+</head>
+<body>
+<canvas id="unity-canvas" tabindex="-1"></canvas>
+<button id="savebtn" title="Save data">&#128190;</button>
+<div id="savemenu">
+  <button id="saveexport">Export save to file</button>
+  <button id="saveimport">Load save from file…</button>
+  <input id="savefile" type="file" accept=".json,application/json" style="display:none" />
+  <div id="savemsg"></div>
+</div>
+<div id="loader"><span id="loadmsg">Loading…</span><div id="bar"><div id="fill"></div></div><div id="err"></div></div>
+<script>
+  // ---- save storage helpers (used by TingWeb.jslib): localStorage + chunked cookie mirror ----
+  (function () {
+    // cookies ride on every request: keep the mirror to small saves and a small total so headers stay well under
+    // typical server limits (8-16 KB); big checkpoint files live in localStorage only
+    var PFX = "tingsave:", CHUNK = 3000, MAXCOOKIE = 12, BUDGET = 7000;
+    function cname(key) { return "tg_" + key.slice(PFX.length).replace(/[^A-Za-z0-9]/g, "_"); }
+    function setCookie(n, v, age) { document.cookie = n + "=" + v + "; max-age=" + age + "; path=/; SameSite=Lax"; }
+    function getCookie(n) {
+      var parts = document.cookie.split("; ");
+      for (var i = 0; i < parts.length; i++) { var j = parts[i].indexOf("="); if (parts[i].slice(0, j) === n) return parts[i].slice(j + 1); }
+      return null;
+    }
+    window.tingCookieDelete = function (key) {
+      var n = cname(key);
+      for (var i = 0; i < MAXCOOKIE; i++) setCookie(n + "_" + i, "", 0);
+      setCookie(n + "_n", "", 0);
+    };
+    window.tingCookieSave = function (key, val) {
+      var enc = encodeURIComponent(val), n = cname(key), count = Math.ceil(enc.length / CHUNK) || 1;
+      window.tingCookieDelete(key);
+      if (count > MAXCOOKIE || document.cookie.length + enc.length > BUDGET) return;  // too big for cookies: localStorage only
+      for (var i = 0; i < count; i++) setCookie(n + "_" + i, enc.slice(i * CHUNK, (i + 1) * CHUNK), 31536000);
+      setCookie(n + "_n", String(count), 31536000);
+    };
+    window.tingCookieLoad = function (key) {
+      var n = cname(key), c = getCookie(n + "_n");
+      if (c === null) return null;
+      var s = "";
+      for (var i = 0; i < parseInt(c, 10); i++) { var p = getCookie(n + "_" + i); if (p === null) return null; s += p; }
+      try { return decodeURIComponent(s); } catch (e) { return null; }
+    };
+    // older builds mirrored whole checkpoint files into cookies (70+ KB headers): drop every tg_ cookie once over budget
+    if (document.cookie.length > BUDGET) {
+      document.cookie.split("; ").forEach(function (c) { var n = c.split("=")[0]; if (n.indexOf("tg_") === 0) setCookie(n, "", 0); });
+    }
+    function allSaves() {
+      var out = {};
+      try {
+        for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k.indexOf(PFX) === 0) out[k] = localStorage.getItem(k); }
+      } catch (e) {}
+      return out;
+    }
+    window.tingClearSaves = function () {
+      var all = allSaves();
+      for (var k in all) { try { localStorage.removeItem(k); } catch (e) {} window.tingCookieDelete(k); }
+    };
+    // menu
+    var btn = document.getElementById("savebtn"), menu = document.getElementById("savemenu"), msg = document.getElementById("savemsg");
+    btn.onclick = function () { var open = menu.style.display !== "flex"; menu.style.display = open ? "flex" : "none"; btn.classList.toggle("open", open); msg.textContent = ""; };
+    document.getElementById("saveexport").onclick = function () {
+      var data = JSON.stringify({ game: "ting-wd-web", version: 1, saved: new Date().toISOString(), saves: allSaves() }, null, 1);
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([data], { type: "application/json" }));
+      a.download = "ting-wd-save.json";
+      document.body.appendChild(a); a.click(); a.remove();
+      msg.textContent = "Save exported.";
+    };
+    var file = document.getElementById("savefile");
+    document.getElementById("saveimport").onclick = function () { file.value = ""; file.click(); };
+    file.onchange = function () {
+      var f = file.files && file.files[0]; if (!f) return;
+      var r = new FileReader();
+      r.onload = function () {
+        try {
+          var d = JSON.parse(r.result);
+          if (!d || typeof d.saves !== "object") throw new Error("not a save file");
+          window.tingClearSaves();
+          for (var k in d.saves) { if (k.indexOf(PFX) !== 0) continue; localStorage.setItem(k, d.saves[k]); window.tingCookieSave(k, d.saves[k]); }
+          msg.textContent = "Save loaded, restarting…";
+          setTimeout(function () { location.reload(); }, 600);
+        } catch (e) { msg.textContent = "Could not load: " + e.message; }
+      };
+      r.readAsText(f);
+    };
+  })();
+
+
+  // ---- CDN loader: parts -> blob: URLs (written by tools/make_cdn_page.py) ----
+  var MANIFEST = {
+ "framework": {
+  "file": "b138.framework.js.unityweb",
+  "bytes": 75845
+ },
+ "loader": {
+  "file": "b138.loader.js",
+  "bytes": 114412
+ },
+ "data": {
+  "file": "b138.data.unityweb",
+  "parts": [
+   "b138.data.unityweb.part000",
+   "b138.data.unityweb.part001",
+   "b138.data.unityweb.part002",
+   "b138.data.unityweb.part003",
+   "b138.data.unityweb.part004",
+   "b138.data.unityweb.part005",
+   "b138.data.unityweb.part006",
+   "b138.data.unityweb.part007",
+   "b138.data.unityweb.part008"
+  ],
+  "bytes": 168085643
+ },
+ "code": {
+  "file": "b138.wasm.unityweb",
+  "bytes": 7832819
+ }
+};
+  var BUILD = new URL("Build", document.baseURI).href;
+  var CACHE_KEY = "ting-b138";     // changes with every release so old parts are evicted
+  var canvas = document.getElementById("unity-canvas");
+  var fill = document.getElementById("fill"), err = document.getElementById("err");
+  var label = document.getElementById("loadmsg");
+  function mb(b) { return (b / 1048576).toFixed(1); }
+  var TOTAL = MANIFEST.data.bytes + MANIFEST.framework.bytes + MANIFEST.code.bytes, downloaded = 0;
+  function report(what, cached) {
+    var pct = TOTAL ? downloaded / TOTAL : 0;
+    fill.style.width = (pct * 100).toFixed(1) + "%";
+    label.textContent = (cached ? "Loading cached " : "Downloading ") + what + "… " + mb(downloaded) + " / " + mb(TOTAL) + " MB";
+  }
+  var cachePromise = (async function () {
+    try {
+      if (!window.caches) return null;
+      var names = await caches.keys();
+      for (var i = 0; i < names.length; i++) if (names[i].indexOf("ting-") === 0 && names[i] !== CACHE_KEY) await caches.delete(names[i]);
+      return await caches.open(CACHE_KEY);
+    } catch (e) { return null; }
+  })();
+  async function assembleOnce(entry, what, useCache) {
+    var urls = entry.parts || [entry.file], cache = useCache ? await cachePromise : null, buffers = [];
+    for (var i = 0; i < urls.length; i++) {
+      var url = BUILD + "/" + urls[i], res = null, cached = false;
+      if (cache) { try { res = await cache.match(url); cached = !!res; } catch (e) { res = null; } }
+      if (!res) {
+        var lastErr = null;
+        for (var attempt = 0; attempt < 4 && !res; attempt++) {
+          if (attempt) { label.textContent = what + ": retrying (" + attempt + ")…"; await new Promise(function (r) { setTimeout(r, 400 * Math.pow(2, attempt)); }); }
+          try {
+            var c = await fetch(url, { cache: "no-store" });
+            if (c.ok) res = c; else lastErr = new Error(url + " returned " + c.status);
+          } catch (e) { lastErr = e; }
+        }
+        if (!res) throw lastErr || new Error("failed to fetch " + url);
+        if (cache) { try { await cache.put(url, res.clone()); } catch (e) {} }
+      }
+      if (res.body && res.body.getReader) {
+        var reader = res.body.getReader();
+        while (true) { var step = await reader.read(); if (step.done) break; buffers.push(step.value); downloaded += step.value.byteLength; report(what, cached); }
+      } else { var buf = await res.arrayBuffer(); buffers.push(buf); downloaded += buf.byteLength; report(what, cached); }
+    }
+    var blob = new Blob(buffers);
+    // never smaller than the file on disk: anything short is a truncated download or a CDN error page
+    if (entry.bytes && blob.size < entry.bytes) throw new Error(what + " is only " + blob.size + " bytes, expected at least " + entry.bytes);
+    return URL.createObjectURL(blob);
+  }
+  async function assemble(entry, what) {
+    try { return await assembleOnce(entry, what, true); }
+    catch (e) {
+      label.textContent = what + ": cached copy looks wrong, re-downloading…";
+      try { var cache = await cachePromise; if (cache) { var u = entry.parts || [entry.file]; for (var i = 0; i < u.length; i++) { try { await cache.delete(BUILD + "/" + u[i]); } catch (x) {} } } } catch (x) {}
+      downloaded = 0;
+      return await assembleOnce(entry, what, false);
+    }
+  }
+  canvas.addEventListener("pointerdown", function () { canvas.focus(); });
+  (async function () {
+    try {
+      var dataUrl = await assemble(MANIFEST.data, "game data");
+      var frameworkUrl = await assemble(MANIFEST.framework, "framework");
+      var codeUrl = await assemble(MANIFEST.code, "code");
+      label.textContent = "Starting…";
+      var s = document.createElement("script");
+      s.src = BUILD + "/" + MANIFEST.loader.file;
+      s.onload = function () {
+        if (typeof createUnityInstance !== "function") { err.textContent = "The loader did not load (CDN error page?). Reload to try again."; return; }
+        createUnityInstance(canvas, {
+          dataUrl: dataUrl, frameworkUrl: frameworkUrl, codeUrl: codeUrl,
+          streamingAssetsUrl: new URL("StreamingAssets", document.baseURI).href,
+          companyName: "DrawMeAPixel", productName: "There Is No Game: Wrong Dimension", productVersion: "1.0.40",
+          matchWebGLToCanvasSize: true,
+          devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+        }, function (p) { fill.style.width = (100 * p) + "%"; label.textContent = "Loading… " + Math.round(100 * p) + "%"; })
+        .then(function (inst) { window.unityInstance = inst; document.getElementById("loader").remove(); })
+        .catch(function (e) { err.textContent = String(e); });
+      };
+      s.onerror = function () { err.textContent = "Failed to load " + s.src; };
+      document.body.appendChild(s);
+    } catch (e) { err.textContent = "Could not load the game: " + (e && e.message ? e.message : e) + " (reload to try again)"; }
+  })();
+</script>
+</body>
+</html>

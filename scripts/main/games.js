@@ -6,6 +6,8 @@ const featuredHeading = document.getElementById("featuredheading");
 const allHeading = document.getElementById("allheading");
 const trendingContainer = document.getElementById("trending");
 const trendingHeading = document.getElementById("trendingheading");
+const recentContainer = document.getElementById("recent");
+const recentHeading = document.getElementById("recentheading");
 const gameSearch = document.getElementById("inputbox");
 
 const firebaseConfig = {
@@ -19,6 +21,7 @@ const firebaseConfig = {
 };
 const PLAYCOUNTS_NODE = "citasuneplaycounts";
 let hasTrending = false;
+let hasRecent = false;
 let gnDb = null;
 
 function getDb() {
@@ -55,6 +58,21 @@ function siteURL(p) {
   return new URL(p.replace(/^\.?\//, ""), document.baseURI).href;
 }
 
+function getRecentIds(list, count = 5) {
+  return list
+    .map((zone, index) => ({ zone, index }))
+    .sort((a, b) => {
+      const idA = Number(a.zone.id);
+      const idB = Number(b.zone.id);
+      if (!Number.isNaN(idA) && !Number.isNaN(idB) && idA !== idB) {
+        return idB - idA;
+      }
+      return b.index - a.index;
+    })
+    .slice(0, count)
+    .map((item) => item.zone);
+}
+
 async function listZones() {
   if (!gamesContainer) return;
   try {
@@ -67,10 +85,16 @@ async function listZones() {
     } catch (e) {
       console.error("failed to load extra games", e);
     }
-    const merged = json.concat(extra);
-    const hiddenIds = ["-1", "253", "429", "469", "596", "87", "113","710", "750", "751"];
-    zones = merged.filter((zone) => !hiddenIds.includes(zone.id + ""));
+
+    const hiddenIds = ["-1", "253", "429", "469", "596", "87", "113", "710", "750", "751", "849"];
+    const mainZones = json.filter((zone) => !hiddenIds.includes(zone.id + ""));
+    const extraZones = extra.filter((zone) => !hiddenIds.includes(zone.id + ""));
+    zones = mainZones.concat(extraZones);
+
+    const recentList = getRecentIds(extraZones, 5).concat(getRecentIds(mainZones, 5));
+
     displayTrending();
+    displayRecent(recentList);
     displayFeatured(zones.filter((zone) => zone.featured === true));
     displayZones(zones.filter((zone) => zone.featured !== true));
   } catch (error) {
@@ -98,8 +122,8 @@ function makeCard(file) {
   img.alt = file.name;
   img.loading = "lazy";
   card.appendChild(img);
-  img.onerror = function() {
-    this.onerror = null; 
+  img.onerror = function () {
+    this.onerror = null;
     this.src = "./assets/imageassets/placeholder.jpg";
     this.className += "placeholder";
   };
@@ -138,6 +162,18 @@ function displayTrending() {
     .catch(() => {});
 }
 
+function displayRecent(list) {
+  if (!recentContainer) return;
+  recentContainer.innerHTML = "";
+  list.forEach((file) => recentContainer.appendChild(makeCard(file)));
+  hasRecent = list.length > 0;
+  const searching = gameSearch && gameSearch.value.length > 0;
+  recentContainer.style.display = hasRecent && !searching ? "" : "none";
+  if (recentHeading) {
+    recentHeading.style.display = hasRecent && !searching ? "" : "none";
+  }
+}
+
 function displayZones(list) {
   gamesContainer.innerHTML = "";
   list.forEach((file) => gamesContainer.appendChild(makeCard(file)));
@@ -173,6 +209,10 @@ function filterZones() {
   const showTrend = query.length === 0 && hasTrending;
   if (trendingContainer) trendingContainer.style.display = showTrend ? "" : "none";
   if (trendingHeading) trendingHeading.style.display = showTrend ? "" : "none";
+
+  const showRecent = query.length === 0 && hasRecent;
+  if (recentContainer) recentContainer.style.display = showRecent ? "" : "none";
+  if (recentHeading) recentHeading.style.display = showRecent ? "" : "none";
 }
 
 if (gameSearch) {

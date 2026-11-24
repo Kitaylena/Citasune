@@ -237,5 +237,72 @@
   "special": [
    "port"
   ]
+ },
+ {
+  "id": 1027,
+  "name": "The Impossible Quiz 2",
+  "cover": "/assets/gameicons/1027.png",
+  "url": "/games/impossiblequiz2.html",
+  "author": "Splapp-me-do",
+  "authorLink": "https://splapp-me-do.newgrounds.com",
+  "special": []
+ },
+ {
+  "id": 1028,
+  "name": "The Impossible Quizmas",
+  "cover": "/assets/gameicons/1028.png",
+  "url": "/games/impossiblequizmas.html",
+  "author": "Splapp-me-do",
+  "authorLink": "https://splapp-me-do.newgrounds.com",
+  "special": []
+ },
+ {
+  "id": 1029,
+  "name": "There is No Game: Wrong Dimension",
+  "cover": "/assets/gameicons/1029.png",
+  "url": "/games/thereisnogamewrong.html",
+  "author": "Draw Me A Pixel",
+  "authorLink": "https://drawmeapixel.com",
+  "special": []
+ },
+ {
+  "id": 1030,
+  "name": "Leaf Blower Revolution",
+  "cover": "/assets/gameicons/1030.png",
+  "url": "/games/leafblowerrevolution.html",
+  "author": "Humble North",
+  "authorLink": "https://humblenorth.de",
+  "special": []
+ },
+ {
+  "id": 1031,
+  "name": "Karlson 2D",
+  "cover": "/assets/gameicons/1031.png",
+  "url": "/games/karlson2d.html",
+  "author": "",
+  "authorLink": "https://danidev.itch.io",
+  "special": []
+ },
+ {
+  "id": 1032,
+  "name": "ULTRAKILL (Full Game)",
+  "cover": "/assets/gameicons/1032.png",
+  "url": "/games/fullultrakill.html",
+  "author": "New Blood Interactive",
+  "authorLink": "https://newblood.games",
+  "special": [
+    "port"
+  ]
+ },
+ {
+  "id": 1033,
+  "name": "Brotato Paws and Claws Update",
+  "cover": "/assets/gameicons/1033.png",
+  "url": "/games/brotato.html",
+  "author": "Thomas Gervraud",
+  "authorLink": "https://thomasgervraud.com",
+  "special": [
+    "port"
+  ]
  }
 ]

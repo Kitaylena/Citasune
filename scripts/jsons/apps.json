@@ -1,0 +1,167 @@
+[
+ {
+  "id": 1,
+  "name": "Youtube",
+  "cover": "https://www.google.com/s2/favicons?sz=128&domain=youtube.com",
+  "url": "https://www.youtube.com",
+  "author": "Google LLC",
+  "authorLink": "https://www.google.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 2,
+  "name": "Instagram",
+  "cover": "https://www.google.com/s2/favicons?sz=128&domain=instagram.com",
+  "url": "https://www.instagram.com",
+  "author": "Meta",
+  "authorLink": "https://about.meta.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 3,
+  "name": "TikTok",
+  "cover": "https://www.google.com/s2/favicons?sz=128&domain=tiktok.com",
+  "url": "https://www.tiktok.com",
+  "author": "ByteDance",
+  "authorLink": "https://www.bytedance.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 4,
+  "name": "Discord",
+  "cover": "https://www.google.com/s2/favicons?sz=128&domain=discord.com",
+  "url": "https://discord.com/app",
+  "author": "Discord Inc.",
+  "authorLink": "https://discord.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 5,
+  "name": "Snapchat",
+  "cover": "https://www.google.com/s2/favicons?sz=128&domain=snapchat.com",
+  "url": "https://web.snapchat.com",
+  "author": "Snap Inc.",
+  "authorLink": "https://www.snap.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 6,
+  "name": "Spotify",
+  "cover": "https://www.google.com/s2/favicons?sz=128&domain=spotify.com",
+  "url": "https://open.spotify.com",
+  "author": "Spotify AB",
+  "authorLink": "https://www.spotify.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 7,
+  "name": "Twitch",
+  "cover": "https://www.google.com/s2/favicons?sz=128&domain=twitch.tv",
+  "url": "https://www.twitch.tv",
+  "author": "Twitch Interactive",
+  "authorLink": "https://www.twitch.tv",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 8,
+  "name": "Reddit",
+  "cover": "https://www.google.com/s2/favicons?sz=128&domain=reddit.com",
+  "url": "https://www.reddit.com",
+  "author": "Reddit, Inc.",
+  "authorLink": "https://www.redditinc.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 9,
+  "name": "X",
+  "cover": "https://www.google.com/s2/favicons?sz=128&domain=x.com",
+  "url": "https://x.com",
+  "author": "X Corp.",
+  "authorLink": "https://x.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 10,
+  "name": "Pinterest",
+  "cover": "https://www.google.com/s2/favicons?sz=128&domain=pinterest.com",
+  "url": "https://www.pinterest.com",
+  "author": "Pinterest, Inc.",
+  "authorLink": "https://www.pinterest.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 11,
+  "name": "SoundCloud",
+  "cover": "https://www.google.com/s2/favicons?sz=128&domain=soundcloud.com",
+  "url": "https://soundcloud.com",
+  "author": "SoundCloud",
+  "authorLink": "https://soundcloud.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 12,
+  "name": "Netflix",
+  "cover": "https://www.google.com/s2/favicons?sz=128&domain=netflix.com",
+  "url": "https://www.netflix.com",
+  "author": "Netflix, Inc.",
+  "authorLink": "https://www.netflix.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 13,
+  "name": "ChatGPT",
+  "cover": "https://www.google.com/s2/favicons?sz=128&domain=chatgpt.com",
+  "url": "https://chatgpt.com",
+  "author": "OpenAI",
+  "authorLink": "https://openai.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 14,
+  "name": "GeForce NOW",
+  "cover": "https://www.google.com/s2/favicons?sz=128&domain=play.geforcenow.com",
+  "url": "https://play.geforcenow.com",
+  "author": "NVIDIA",
+  "authorLink": "https://www.nvidia.com",
+  "special": [
+   "port"
+  ]
+ },
+ {
+  "id": 15,
+  "name": "Xbox Cloud Gaming",
+  "cover": "https://www.google.com/s2/favicons?sz=128&domain=xbox.com",
+  "url": "https://www.xbox.com/play",
+  "author": "Microsoft",
+  "authorLink": "https://www.xbox.com",
+  "special": [
+   "port"
+  ]
+ }
+]

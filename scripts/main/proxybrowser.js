@@ -28,6 +28,11 @@
   // servers to fall through when the configured one can't reach a site, ordered
   // most-reliable first so a dead primary lands on a working one quickly.
   var WISP_FALLBACKS = [
+    "wss://wisp.chedar.dev",
+    "wss://wisp.chedar.dev/relay/",
+    "wss://a.sngdu.com/m/",
+    "wss://a.ixl.college/m/",
+    "wss://d1xlxx9t2mhzk9.cloudfront.net/thing/",
     "wss://wisp.rhw.one/wisp/",
     "wss://fern.best/wisp/",
     "wss://glseries.net/wisp/",

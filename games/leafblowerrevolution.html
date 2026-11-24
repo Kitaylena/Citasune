@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<base href="https://cdn.jsdelivr.net/gh/ajtabjs/wl-ports2@ff6166da5515080369aa602d1f37a24b21d806b6/leafblowerrevolution/">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Leaf Blower Revolution</title>
+<link rel="icon" href="favicon.ico">
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101010}
+body{display:flex;align-items:center;justify-content:center}
+canvas{display:block;width:100vw;height:100vh;max-width:100vw;max-height:100vh;object-fit:contain;outline:none}
+#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;color:#fff;font:16px system-ui;background:#101010;z-index:10;padding:24px}
+#loading h1{font-size:22px;margin:0 0 12px}
+#loading p{margin:0 0 14px;color:#bbb}
+#loading progress{width:min(320px,80vw);height:10px}
+#loading.error{background:#241818}
+</style>
+</head>
+<body>
+<div id="loading"><div><h1>Leaf Blower Revolution</h1><p id="status">Loading game data…</p><progress id="progress" max="100" value="0"></progress></div></div>
+<canvas id="canvas" tabindex="0" oncontextmenu="event.preventDefault()"></canvas>
+<script>
+var gameRuntimeDir = 'js/';
+var gameFile = 'game.unx';
+var gamePartCount = 3;
+var gameByteLength = 51455014;
+var gameStarted = false;
+
+var loadingElement = document.getElementById('loading');
+var statusElement = document.getElementById('status');
+var progressElement = document.getElementById('progress');
+
+function setLoadingStatus(text) {
+  if (statusElement) statusElement.textContent = text;
+}
+
+function setLoadingProgress(fraction) {
+  if (progressElement) progressElement.value = Math.max(0, Math.min(100, fraction * 100));
+}
+
+function showFailure(error) {
+  if (gameStarted) return;
+  var message = error && error.message ? error.message : String(error);
+  console.error('Leaf Blower Revolution failed to start:', error);
+  if (loadingElement) {
+    loadingElement.classList.add('error');
+    loadingElement.style.display = 'flex';
+  }
+  if (progressElement) progressElement.hidden = true;
+  setLoadingStatus('Failed to load: ' + message);
+  document.title = 'Leaf Blower Revolution — failed to load';
+}
+
+var Module = {
+  canvas: document.getElementById('canvas'),
+  locateFile: function(path) { return gameRuntimeDir + path; },
+  setStatus: function(text) {
+    if (text) document.title = text + ' — Leaf Blower Revolution';
+    else document.title = 'Leaf Blower Revolution';
+    if (text && !gameStarted) setLoadingStatus(text);
+  },
+  monitorRunDependencies: function(left) {
+    if (left === 0) {
+      gameStarted = true;
+      document.title = 'Leaf Blower Revolution';
+      if (loadingElement) loadingElement.style.display = 'none';
+    }
+  }
+};
+
+window.addEventListener('error', function(event) {
+  if (!gameStarted) showFailure(event.error || event.message || 'A game file could not load.');
+});
+window.addEventListener('unhandledrejection', function(event) {
+  if (!gameStarted) showFailure(event.reason);
+});
+
+window.manifestFiles = window.manifestFiles || function() { return ''; };
+window.manifestFilesMD5 = window.manifestFilesMD5 || function() { return []; };
+var manifestFiles = window.manifestFiles;
+var manifestFilesMD5 = window.manifestFilesMD5;
+
+var g_pAddAsyncMethod = -1;
+function setAddAsyncMethod(_function) { g_pAddAsyncMethod = _function; }
+var g_pWadLoadCallback = null;
+function setWadLoadCallback(_function) { g_pWadLoadCallback = _function; }
+
+function getParts(file, count) {
+  var parts = [];
+  for (var i = 0; i < count; i++) parts.push(file + '.part' + i);
+  return parts;
+}
+
+function loadScript(src) {
+  return new Promise(function(resolve, reject) {
+    var script = document.createElement('script');
+    script.src = src;
+    script.onload = function() { resolve(); };
+    script.onerror = function() { reject(new Error('Could not load ' + src)); };
+    document.body.appendChild(script);
+  });
+}
+
+function mergeGameParts() {
+  var parts = getParts(gameRuntimeDir + gameFile, gamePartCount);
+  var cacheKey = 'leafblowerrevolution-game-unx-' + gameByteLength;
+
+  function openCache() {
+    if (!window.caches || typeof caches.open !== 'function') return Promise.resolve(null);
+    return caches.open('leafblowerrevolution-cache').catch(function() { return null; });
+  }
+
+  return openCache().then(function(cache) {
+    if (!cache) return { cache: null, blob: null };
+    return cache.match(cacheKey).then(function(cached) {
+      if (!cached) return { cache: cache, blob: null };
+      return cached.blob().then(function(blob) {
+        if (blob.size === gameByteLength) return { cache: cache, blob: blob };
+        return cache.delete(cacheKey).then(function() { return { cache: cache, blob: null }; });
+      });
+    }).catch(function() {
+      return { cache: cache, blob: null };
+    });
+  }).then(function(result) {
+    if (result.blob) {
+      setLoadingProgress(1);
+      setLoadingStatus('Game data loaded from cache.');
+      return URL.createObjectURL(result.blob);
+    }
+
+    var buffers = [];
+    var received = 0;
+    var chain = Promise.resolve();
+
+    parts.forEach(function(part, index) {
+      chain = chain.then(function() {
+        setLoadingStatus('Loading game data… part ' + (index + 1) + ' of ' + parts.length);
+        return fetch(part, { cache: 'no-cache' }).then(function(response) {
+          if (!response.ok) {
+            throw new Error('Failed to download ' + part + ' (HTTP ' + response.status + ')');
+          }
+          return response.arrayBuffer();
+        }).then(function(buffer) {
+          buffers.push(buffer);
+          received += buffer.byteLength;
+          setLoadingProgress(received / gameByteLength);
+        });
+      });
+    });
+
+    return chain.then(function() {
+      var blob = new Blob(buffers, { type: 'application/octet-stream' });
+      if (blob.size !== gameByteLength) {
+        throw new Error('Merged ' + gameFile + ' is ' + blob.size + ' bytes, expected ' + gameByteLength + '.');
+      }
+      setLoadingProgress(1);
+      if (!result.cache) return blob;
+      return result.cache.put(cacheKey, new Response(blob)).then(function() {
+        return blob;
+      }).catch(function() {
+        return blob;
+      });
+    }).then(function(blob) {
+      return URL.createObjectURL(blob);
+    });
+  });
+}
+
+function useGameBlob(blobUrl) {
+  var originalFetch = window.fetch;
+  window.fetch = function(input, init) {
+    var url = input instanceof Request ? input.url : String(input);
+    if (url.indexOf(gameFile) !== -1) {
+      input = input instanceof Request ? new Request(blobUrl, input) : blobUrl;
+    }
+    return originalFetch.call(this, input, init);
+  };
+
+  var originalOpen = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function(method, url) {
+    var args = Array.prototype.slice.call(arguments);
+    if (String(url).indexOf(gameFile) !== -1) args[1] = blobUrl;
+    return originalOpen.apply(this, args);
+  };
+}
+
+setLoadingStatus('Loading game data…');
+mergeGameParts().then(function(blobUrl) {
+  useGameBlob(blobUrl);
+  setLoadingStatus('Starting game…');
+  return loadScript(gameRuntimeDir + 'runner.js');
+}).catch(showFailure);
+</script>
+</body>
+</html>

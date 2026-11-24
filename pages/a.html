@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>(function(){var r=location.href.split("#")[0].split("?")[0].replace(/[^/]*$/,"");if(/\/pages\/$/.test(r))r=r.slice(0,-6);document.write('<base href="'+r+'">');})();</script>
+  <title>Citasune</title>
+  <link rel="icon" type="image/png" href="assets/imageassets/CitasuneIcon.png">
+  <link rel="stylesheet" href="style/style.css">
+  <meta name="description" content="Citasune — 800+ unbl*cked apps, no ads, fully customizable. made by kitaylena ❤">
+  <meta name="keywords" content="citasune, unbl*cked apps, unbl*cked, apps, proxy, school apps, no ads">
+  <meta name="author" content="Kitaylena">
+  <meta name="theme-color" content="#0b0c0d">
+  <meta name="robots" content="index, follow">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Citasune">
+  <meta property="og:title" content="Citasune — 800+ unbl*cked apps">
+  <meta property="og:description" content="800+ unbl*cked apps, no ads, fully customizable. made by kitaylena ❤">
+  <meta property="og:image" content="/assets/imageassets/CitasuneIcon.png">
+  <meta property="og:url" content="https://citasune.onrender.com">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Citasune — 800+ unbl*cked apps!">
+  <meta name="twitter:description" content="800+ unbl*cked apps, no ads, fully customizable. made by kitaylena ❤">
+  <meta name="twitter:image" content="/assets/imageassets/CitasuneIcon.png">
+</head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-89QQ4M67R7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-89QQ4M67R7');
+</script>
+<body class="scrollable">
+  <div id="background">
+    <canvas id="particleCanvas"></canvas>
+    <div id="checkerpattern"></div>
+  </div>
+
+  <div id="topbar">
+    <div id="shadowthing"></div>
+    
+    <div class="topbarsection left">
+      <button class="topbarbutton" aria-label="Home" onclick="goto('/index.html')">
+        <img src="assets/imageassets/CitasuneIcon.png" alt="Citasune Icon">
+      </button>
+      <div class="topbardivider"></div>
+      <h3 id="titlenameorsmth">Citasune</h3>
+    </div>
+
+    <div class="topbarsection right">
+      <div class="topbardivider"></div>
+      <p id="clock"></p>
+      <button class="topbarbutton" id="gamepadbutton" aria-label="Games" onclick="goto('/pages/g.html')">
+        <img src="assets/imageassets/game.png" alt="Gamepad Icon">
+      </button>
+      <button class="topbarbutton" id="proxybutton" aria-label="Proxy" onclick="goto('/index.html')">
+        <img src="assets/imageassets/proxy.png" alt="Internet Icon">
+      </button>
+      <button class="topbarbutton" id="appsbutton" aria-label="Apps" onclick="goto('/pages/a.html')">
+        <img src="assets/imageassets/appsicon.png" alt="Apps Icon">
+      </button>
+      <button class="topbarbutton" id="dcbutton" aria-label="Discord" onclick="discord()">
+        <img src="assets/imageassets/discordicon.png" alt="Discord Icon">
+      </button>
+      <button class="topbarbutton" id="settingsbutton" aria-label="Settings" onclick="openSettings()">
+        <img src="assets/imageassets/settings.png" alt="Settings Icon">
+      </button>
+    </div>
+  </div>
+  <div id="maingamesection">
+    <div id="searchbar">
+      <input id="inputbox" name="user" autocomplete="off" data-private placeholder="search.." />
+    </div>
+    <h2 class="gamesheading" id="allheading">all apps</h2>
+    <div id="appsthing"></div>
+  </div>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="scripts/main/privacyshield.js"></script>
+  <script src="scripts/main/proxytransport.js?v=1"></script>
+  <script src="scripts/main/main.js"></script>
+  <script src="scripts/main/apps.js"></script>
+</body>
+</html>

@@ -407,6 +407,9 @@ h3 {
 }
 
 #searchbar {
+    position: sticky;
+    top: 80px;
+    z-index: 100;
     width: 100%;
     max-width: 500px;
     margin-bottom: 2rem;
@@ -446,7 +449,7 @@ h3 {
     box-shadow: 0 0 15px rgba(var(--accent-rgb), 0.2);
 }
 
-#games {
+#games, #appsthing {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 1.5rem;
@@ -526,8 +529,8 @@ h3 {
     text-align: left;
 }
 
-#featured, #trending {
-    display: flex !important;
+#featured, #trending, #recent {
+    display: flex;
     flex-direction: row !important;
     gap: 1.5rem;
     width: 100%;
@@ -540,7 +543,7 @@ h3 {
     scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
-#featured .gamecard, #trending .gamecard {
+#featured .gamecard, #trending .gamecard, #recent .gamecard {
     position: relative;
     flex: 0 0 160px !important;
     width: 160px !important;
@@ -548,24 +551,24 @@ h3 {
     max-width: 160px !important;
 }
 
-#featured::-webkit-scrollbar, #trending::-webkit-scrollbar {
+#featured::-webkit-scrollbar, #trending::-webkit-scrollbar, #recent::-webkit-scrollbar {
     height: 6px;
 }
 
-#featured::-webkit-scrollbar-track, #trending::-webkit-scrollbar-track {
+#featured::-webkit-scrollbar-track, #trending::-webkit-scrollbar-track, #recent::-webkit-scrollbar-track {
     background: transparent;
 }
 
-#featured::-webkit-scrollbar-thumb, #trending::-webkit-scrollbar-thumb {
+#featured::-webkit-scrollbar-thumb, #trending::-webkit-scrollbar-thumb, #recent::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 10px;
 }
 
-#featured::-webkit-scrollbar-thumb:hover, #trending::-webkit-scrollbar-thumb:hover {
+#featured::-webkit-scrollbar-thumb:hover, #trending::-webkit-scrollbar-thumb:hover, #recent::-webkit-scrollbar-thumb:hover {
     background: rgba(var(--accent-rgb), 0.5);
 }
 
-#trendingheading {
+#trendingheading, #recentheading {
     display: flex;
     align-items: center;
     gap: 0.5rem;

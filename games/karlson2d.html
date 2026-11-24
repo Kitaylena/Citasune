@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <base href="https://cdn.jsdelivr.net/gh/ajtabjs/wl-ports2@da0980255d973d9f44cc0cc8a4362afe8d2a9eac/truffledkarlson2d/">
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | Karlson</title>
+    <script src="Build/UnityLoader.js"></script>
+    <script>
+      UnityLoader.instantiate("unityContainer", "Build/bog.json");
+    </script>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden; 
+        height: 100%;
+        width: 100%;
+      }
+      #unityContainer {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="unityContainer"></div>
+    <script>
+function OpenInNewTab(url) {
+    window.open(url, '_blank');
+}
+    </script>
+  </body>
+</html>

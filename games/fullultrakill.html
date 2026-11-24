@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <base href="https://cdn.jsdelivr.net/gh/ajtabjs/wl-ports2@da0980255d973d9f44cc0cc8a4362afe8d2a9eac/ultrakill/">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | ULTRAKILL</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+  </head>
+  <body>
+    <div id="unity-container" class="unity-desktop">
+      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+      </div>
+      <div id="unity-warning"> </div>
+      <div id="unity-footer">
+        <div id="unity-webgl-logo"></div>
+        <div id="unity-fullscreen-button"></div>
+        <div id="unity-build-title">ULTRAKILL</div>
+      </div>
+    </div>
+    <script src="split-loader.js"></script>
+    <script>
+
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+      var warningBanner = document.querySelector("#unity-warning");
+
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      // Resolve asset URLs against <base href> (CDN) so Unity/Addressables
+      // requests hit where assets are served, not the page origin root.
+      // fetch/XHR with a leading "/" ignore <base>, which previously caused
+      // requests like /StreamingAssets/aa/settings.json to hit the page host.
+      // split-loader.js also rewrites such requests; absolute config URLs
+      // make Unity's own URL joins robust.
+      function resolveAssetUrl(rel) {
+        try { return new URL(rel, document.baseURI).href; } catch (e) { return rel; }
+      }
+      function stripTrailingSlash(s) { return s.replace(/\/$/, ""); }
+      var buildUrl = stripTrailingSlash(resolveAssetUrl("Build"));
+      var loaderUrl = buildUrl + "/build.loader.js";
+      var config = {
+        dataUrl: buildUrl + "/build.data",
+        frameworkUrl: buildUrl + "/build.framework.js",
+        codeUrl: buildUrl + "/build.wasm",
+        streamingAssetsUrl: stripTrailingSlash(resolveAssetUrl("StreamingAssets")),
+        companyName: "Hakita",
+        productName: "ULTRAKILL",
+        productVersion: "4.1",
+        showBanner: unityShowBanner,
+      };
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        container.className = "unity-mobile";
+        canvas.className = "unity-mobile";
+
+
+      }
+
+      config.devicePixelRatio = 1;
+      document.documentElement.style.height = "100%";
+      document.body.style.margin = "0";
+      document.body.style.height = "100%";
+      document.body.style.overflow = "hidden";
+      container.style.width = "100%";
+      container.style.height = "100%";
+      function resizeUKCanvas() {
+        canvas.style.width = window.innerWidth + "px";
+        canvas.style.height = window.innerHeight + "px";
+      }
+      resizeUKCanvas();
+      window.addEventListener('resize', resizeUKCanvas);
+
+      window.addEventListener('beforeunload', function (e) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      });
+      function tryLockKeyboard() {
+        try {
+          if (navigator.keyboard && navigator.keyboard.lock) {
+            navigator.keyboard.lock();
+          }
+        } catch (err) {}
+      }
+      function tryUnlockKeyboard() {
+        try {
+          if (navigator.keyboard && navigator.keyboard.unlock) {
+            navigator.keyboard.unlock();
+          }
+        } catch (err) {}
+      }
+      document.addEventListener('fullscreenchange', function () {
+        if (document.fullscreenElement) tryLockKeyboard();
+        else tryUnlockKeyboard();
+      });
+      document.addEventListener('pointerlockchange', function () {
+        if (document.pointerLockElement) tryLockKeyboard();
+      });
+      canvas.addEventListener('mousedown', tryLockKeyboard);
+
+      loadingBar.style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+              }).then((unityInstance) => {
+                loadingBar.style.display = "none";
+                fullscreenButton.onclick = () => {
+                  unityInstance.SetFullscreen(1);
+                };
+              }).catch((message) => {
+                alert(message);
+              });
+            };
+
+      (window.splitloader ? window.splitloader.ready : Promise.resolve()).then(() => {
+        try {
+          var m = window.splitloader && window.splitloader.manifest;
+          if (m && m.files) {
+            Object.keys(m.files).forEach(function (k) {
+              try {
+                var p1 = decodeURIComponent(new URL(k, document.baseURI).pathname);
+                if (p1.charAt(0) === "/") p1 = p1.slice(1);
+                if (p1 !== k && !m.files[p1]) m.files[p1] = m.files[k];
+              } catch (e) {}
+              try {
+                var p2 = decodeURIComponent(new URL(k, document.URL).pathname);
+                if (p2.charAt(0) === "/") p2 = p2.slice(1);
+                if (p2 !== k && !m.files[p2]) m.files[p2] = m.files[k];
+              } catch (e) {}
+            });
+          }
+        } catch (e) {}
+        try {
+          return fetch(config.codeUrl, { credentials: "same-origin" }).then(function (r) {
+            if (!r.ok) throw new Error("warmup " + r.status);
+            return r.arrayBuffer();
+          }).catch(function () {});
+        } catch (e) {}
+        return null;
+      }).then(function () {
+        document.body.appendChild(script);
+      });
+
+    </script>
+  </body>
+</html>

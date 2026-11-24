@@ -1,11 +1,18 @@
 // main page
-const now = new Date();
-const time = now.toLocaleTimeString();
+const timeElement = document.getElementById("clock");
+
+function updateClock() {
+  if (!timeElement) return;
+  const now = new Date();
+  timeElement.textContent = now.toLocaleTimeString();
+}
+
+updateClock();
+setInterval(updateClock, 1000);
 
 const randomtext = document.getElementById("randomtext");
 const list = [
   "hellooo",
-  "its literally " + time + " what are u doing rn",
   "All Hail To Benjamin Netanyahu!",
   "kids be doing ANYTHING but their work",
   "i recently got into touhou, now i know bad apple is a touhou song",
@@ -51,6 +58,11 @@ const list = [
   "I’m sorry, but I can’t help with that. - AI Response",
   "play veilrite on roblox",
   "yup yup yup citasune has coderot, we are all going to die",
+  "sigh.. do not joke about the jupiter 2011 incident, it was a tragedy",
+  "christmas oouu",
+  "so jolly",
+  "how to be cool like me: 1. be me 2. be cool",
+  "kitaylena.wtf",
 ];
 
 if (randomtext) {
@@ -178,6 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+/*
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("particleCanvas");
   if (!canvas) return;
@@ -265,6 +278,128 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   requestAnimationFrame(animate);
 });
+*/
+document.addEventListener("DOMContentLoaded", () => {
+  const canvas = document.getElementById("particleCanvas");
+  if (!canvas) return;
+
+  const reduceMotion =
+    window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion) {
+    canvas.style.display = "none";
+    return;
+  }
+
+  const ctx = canvas.getContext("2d");
+  let particles = [];
+  let snowflakes = [];
+  let w = 0, h = 0;
+  let accentRgb = "255, 117, 24";
+
+  function updateAccentColor() {
+    const computed = getComputedStyle(document.documentElement)
+      .getPropertyValue("--accent-rgb")
+      .trim();
+    if (computed) accentRgb = computed;
+  }
+
+  const observer = new MutationObserver(() => updateAccentColor());
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["style", "class", "data-theme"]
+  });
+
+  window.addEventListener("themechange", updateAccentColor);
+
+  function resizeCanvas() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    updateAccentColor();
+  }
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
+
+  const particleCount = Math.max(15, Math.min(50, Math.round(window.innerWidth / 35)));
+  const snowCount = Math.max(25, Math.min(80, Math.round(window.innerWidth / 25)));
+
+  class Particle {
+    constructor() { this.reset(true); }
+    reset(anywhere) {
+      this.x = Math.random() * w;
+      this.y = anywhere ? Math.random() * h : h + 10;
+      this.size = Math.random() * 2.5 + 0.5;
+      this.speedY = (Math.random() * 0.4 + 0.1) * 60;
+      this.speedX = (Math.random() * 0.2 - 0.1) * 60;
+      this.opacity = Math.random() * 0.6 + 0.1;
+      this.flickerSpeed = Math.random() * 0.003 + 0.001;
+      this.driftOffset = Math.random() * Math.PI * 2;
+    }
+    update(dt) {
+      this.y -= this.speedY * dt;
+      this.x += Math.sin(this.y * 0.01 + this.driftOffset) * 0.3 + this.speedX * dt;
+      this.opacity += Math.sin(Date.now() * this.flickerSpeed) * 0.005;
+      this.opacity = Math.max(0.08, Math.min(0.75, this.opacity));
+      if (this.y < -10 || this.x < -10 || this.x > w + 10) this.reset(false);
+    }
+    draw() {
+      ctx.fillStyle = "rgba(" + accentRgb + ", " + this.opacity + ")";
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  class Snowflake {
+    constructor() { this.reset(true); }
+    reset(anywhere) {
+      this.x = Math.random() * w;
+      this.y = anywhere ? Math.random() * h : -10;
+      this.size = Math.random() * 2.2 + 0.8;
+      this.speedY = (Math.random() * 0.5 + 0.25) * 60;
+      this.speedX = (Math.random() * 0.25 - 0.125) * 60;
+      this.opacity = Math.random() * 0.55 + 0.2;
+      this.swayOffset = Math.random() * Math.PI * 2;
+      this.swaySpeed = Math.random() * 1.5 + 0.5;
+    }
+    update(dt) {
+      this.y += this.speedY * dt;
+      this.x += Math.sin(this.y * 0.015 + this.swayOffset) * this.swaySpeed * 0.4 + this.speedX * dt;
+      if (this.y > h + 10 || this.x < -10 || this.x > w + 10) this.reset(false);
+    }
+    draw() {
+      ctx.fillStyle = "rgba(255, 255, 255, " + this.opacity + ")";
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+  for (let i = 0; i < snowCount; i++) snowflakes.push(new Snowflake());
+
+  const frameInterval = 1000 / 30;
+  let last = 0;
+  function animate(now) {
+    requestAnimationFrame(animate);
+    if (document.hidden) { last = now; return; }
+    const elapsed = now - last;
+    if (elapsed < frameInterval) return;
+    const dt = Math.min(elapsed, 100) / 1000;
+    last = now - (elapsed % frameInterval);
+    ctx.clearRect(0, 0, w, h);
+
+    for (let i = 0; i < snowflakes.length; i++) {
+      snowflakes[i].update(dt);
+      snowflakes[i].draw();
+    }
+    for (let i = 0; i < particles.length; i++) {
+      particles[i].update(dt);
+      particles[i].draw();
+    }
+  }
+  requestAnimationFrame(animate);
+});
+
 // proxy — the search box is wired up in proxy.js (scramjet)
 
 
@@ -353,7 +488,8 @@ const defaultbg = "#0b0c0d";
 const defaultfont = "'thenormalfontorsmth', sans-serif";
 const themes = [
   { name: "Default", rgb: "0, 243, 255", bg: "#0b0c0d" },
-  { name: "Halloween", rgb: "255, 117, 24", bg: "#0d0614", "card-bg": "rgba(255, 117, 24, 0.05)", "card-border": "rgba(255, 117, 24, 0.18)", "panel-bg": "rgba(24, 12, 36, 0.75)", "text-primary": "#ffffff", "text-secondary": "rgba(255, 255, 255, 0.85)", "text-muted": "rgba(255, 255, 255, 0.5)" },
+  { name: "Halloween", rgb: "255, 117, 24", bg: "#0a070c", "card-bg": "rgba(255, 117, 24, 0.05)", "card-border": "rgba(255, 117, 24, 0.18)", "panel-bg": "rgba(24, 12, 36, 0.75)", "text-primary": "#ffffff", "text-secondary": "rgba(255, 255, 255, 0.85)", "text-muted": "rgba(255, 255, 255, 0.5)" },
+  { name: "Christmas", rgb: "255, 255, 255", bg: "#070c08", "card-bg": "rgba(255, 255, 255, 0.05)", "card-border": "rgba(255, 24, 24, 0.18)", "panel-bg": "rgba(12, 36, 16, 0.75)", "text-primary": "#ffffff", "text-secondary": "rgba(146, 240, 167, 0.85)", "text-muted": "rgba(255, 255, 255, 0.5)" },
  // { name: "Original", rgb: "0, 243, 255", bg: "#0b0c0d" },
   { name: "Ocean", rgb: "56, 189, 248", bg: "#0a1420" },
   { name: "Forest", rgb: "74, 222, 128", bg: "#0b140f" },
