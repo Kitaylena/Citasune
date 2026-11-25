@@ -13,8 +13,7 @@
     margin: 0;
     padding: 0;
 }
-
-:root {
+/* :root {
     --accent-rgb: 0, 243, 255;
     --app-font: 'thenormalfontorsmth', sans-serif;
     --bg: #0b0c0d;
@@ -23,6 +22,18 @@
     --panel-bg: rgba(20, 22, 25, 0.55);
     --text-primary: #ffffff;
     --text-secondary: rgba(255, 255, 255, 0.8);
+    --text-muted: rgba(255, 255, 255, 0.5);
+}
+*/
+:root {
+    --accent-rgb: 255, 255, 255;
+    --app-font: 'thenormalfontorsmth', sans-serif;
+    --bg: #070c08;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --card-border: rgba(255, 24, 24, 0.18);
+    --panel-bg: rgba(12, 36, 16, 0.75);
+    --text-primary: #ffffff;
+    --text-secondary: rgba(146, 240, 167, 0.85);
     --text-muted: rgba(255, 255, 255, 0.5);
 }
 
